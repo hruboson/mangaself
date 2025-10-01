@@ -1,8 +1,10 @@
 # UTB-MT
-Project for the Mobile technologies course on UTB
+Project for the Mobile technologies course on UTB.
+
+Author: Ondřej Hruboš (o1\_hrubos *at* utb.cz)
 
 # About
-Comics/manga reading app. Works fully locally, opens folders/zip as manga chapters.
+Simple comics/manga reading app for local files. Use your own folders or zip archives as source.
 
 It gets additional metadata from https://api.mangadex.org/docs/swagger.html
 (!DONT FORGET TO CREDIT MANGADEX IN INFO)
@@ -22,14 +24,19 @@ It gets additional metadata from https://api.mangadex.org/docs/swagger.html
         - long press to select
             - selected can be batch removed/favorited/...
     - second tab add manga (batch/single, select folder, metadata, ...)
+
 2. manga screen
     - top bar
         - left: go back
         - right: toggle favorite
     - title
     - description
+
 3. reading screen (chapter)
     - basic reading settings at bottom - right->left/left->right/long strip
+    - chapter title at top
+    - current page number
+    - skip to next/previous chapter button
 
 4. settings screen
     - top bar
