@@ -48,6 +48,12 @@ It gets additional metadata from https://api.mangadex.org/docs/swagger.html
     - top bar
         - left: go back
         - right: info
+    - middle (settings)
+        - profile name
+        - reading mode
+        - app theme
+    - bottom
+        - switch profile button - will take the user to entry screen
 
 6. info screen
    - author credits
@@ -105,4 +111,10 @@ Subject to change
     - Delete a document (in one collection)
         - Manga
 
-
+### Android Front-end specification:
+- Written in Kotlin and will use MVVM architecture.
+- User interface designed using XML or Jetpack Compose.
+- Application icon and splash screen.
+- Compilable into APK and presentable in a simulator or device.
+- Multiple screens and functional navigation between screens.
+- Communication over the network and retrieve data, e.g., from REST API.
