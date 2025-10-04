@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "UTB-MT"
 include(":app")
+include(":api")

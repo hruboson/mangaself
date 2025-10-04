@@ -1,20 +1,17 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("io.realm.kotlin") version "3.0.0"
 }
 
 android {
-    namespace = "dev.hrubos.mt"
+    namespace = "dev.hrubos.api"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "dev.hrubos.mt"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -36,19 +33,15 @@ android {
 }
 
 dependencies {
-    implementation(project(":api"))
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
     // Realm
-    implementation("io.realm.kotlin:library-base:1.16.0")
+    implementation("io.realm.kotlin:library-base:3.0.0")
 
     // MongoDB
     implementation("io.ktor:ktor-client-core:2.3.5")
