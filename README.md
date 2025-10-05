@@ -1,10 +1,10 @@
-# UTB-MT
-Project for the Mobile technologies course on UTB.
+# Mangaself
+Local manga/comics reader. Project for the Mobile technologies course on UTB.
 
 Author: Ondřej Hruboš (o1\_hrubos *at* utb.cz)
 
 # About
-Simple comics/manga LIBRARY app. Create your own manga/comics library in your android device. Use your own folders or zip archives as source.
+Simple comics/manga library app. Create your own manga/comics library in your android device. Use your own folders or zip archives as source.
 
 You can either index the manga yourself or use mangadex api to get basic metadata. Library metadata are stored in local MongoDB.
 It gets additional metadata from https://api.mangadex.org/docs/swagger.html
