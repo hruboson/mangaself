@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "UTB-MT"
+rootProject.name = "mangaself"
 include(":app")
 include(":api")

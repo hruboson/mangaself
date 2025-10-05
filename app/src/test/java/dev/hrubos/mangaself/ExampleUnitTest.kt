@@ -1,4 +1,4 @@
-package dev.hrubos.mt
+package dev.hrubos.mangaself
 
 import org.junit.Test
 

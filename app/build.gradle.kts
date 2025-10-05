@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.hrubos.mt"
+    namespace = "dev.hrubos.mangaself"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "dev.hrubos.mt"
+        applicationId = "dev.hrubos.mangaself"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

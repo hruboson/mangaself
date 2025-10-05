@@ -1,7 +1,6 @@
-package dev.hrubos.mt
+package dev.hrubos.mangaself
 
 import dev.hrubos.api.Database
-import dev.hrubos.api.Profile
 
 import android.os.Bundle
 import android.util.Log
@@ -34,11 +33,6 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val newProfile = Profile().apply {
-                    name = "Manga test"
-                }
-                db.addProfile(newProfile)
-
                 val profiles = db.getProfiles()
                 val text = profiles.joinToString(separator = "\n") { "ID: ${it.id}, Name: ${it.name}" }
                 profilesTextView.text = text
