@@ -61,6 +61,7 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.ui.tooling)
 
     // Compose navigation
     val nav_version = "2.9.5"

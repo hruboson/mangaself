@@ -93,5 +93,5 @@ fun EntryScreen() {
 @Preview
 @Composable
 fun EntryScreenPreview() {
-    EntryScreen()
+    FloatingTopMenu()
 }
