@@ -1,7 +1,7 @@
 package dev.hrubos.mangaself
 
 import FloatingTopMenu
-import dev.hrubos.api.Database
+import dev.hrubos.db.Database
 
 import android.os.Bundle
 import android.util.Log
