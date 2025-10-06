@@ -1,4 +1,4 @@
-package dev.hrubos.api
+package dev.hrubos.db
 
 class Database(
     useLocal: Boolean,

@@ -1,4 +1,4 @@
-package dev.hrubos.api
+package dev.hrubos.db
 
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration

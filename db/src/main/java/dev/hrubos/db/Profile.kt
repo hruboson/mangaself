@@ -1,7 +1,6 @@
-package dev.hrubos.api
+package dev.hrubos.db
 
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
 import java.util.*
 
 class Profile : RealmObject {

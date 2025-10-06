@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "mangaself"
 include(":app")
-include(":api")
+include(":db")

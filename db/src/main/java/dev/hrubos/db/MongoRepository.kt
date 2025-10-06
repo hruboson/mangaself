@@ -1,4 +1,4 @@
-package dev.hrubos.api
+package dev.hrubos.db
 
 import io.ktor.client.*
 import io.ktor.client.call.*

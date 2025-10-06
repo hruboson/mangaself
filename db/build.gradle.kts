@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.hrubos.api"
+    namespace = "dev.hrubos.db"
     compileSdk = 36
 
     defaultConfig {
