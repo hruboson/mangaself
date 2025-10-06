@@ -1,23 +1,12 @@
-package dev.hrubos.mangaself
-
-import dev.hrubos.db.Database
+package dev.hrubos.mangaself.view
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
+import dev.hrubos.db.Database
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
-import dev.hrubos.mangaself.ui.theme.MangaselfTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
