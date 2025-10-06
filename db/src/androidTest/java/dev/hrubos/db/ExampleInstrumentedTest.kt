@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("dev.hrubos.api.test", appContext.packageName)
+        assertEquals("dev.hrubos.db.test", appContext.packageName)
     }
 }

@@ -1,3 +1,5 @@
+package dev.hrubos.mangaself.ui.components
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,8 +26,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
-
-
 
 @Composable
 fun FloatingTopMenu(
@@ -78,20 +78,4 @@ fun MaterialIconButton(icon: androidx.compose.ui.graphics.vector.ImageVector, si
             tint = MaterialTheme.colorScheme.onSurface
         )
     }
-}
-
-@Composable
-fun EntryScreen() {
-    Column {
-        Text(text = "Column Text 1",
-            Modifier.background(Color.Black))
-        Text(text = "Column Text 2", Modifier.background(Color.White))
-        Text(text = "Column Text 3", Modifier.background(Color.Green))
-    }
-}
-
-@Preview
-@Composable
-fun EntryScreenPreview() {
-    FloatingTopMenu()
 }
