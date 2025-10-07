@@ -1,4 +1,4 @@
-package dev.hrubos.mangaself
+package dev.hrubos.mangaself.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
@@ -7,7 +7,6 @@ import androidx.navigation.compose.rememberNavController
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
-
 
 @Composable
 fun AppNavigation(viewModel: ProfileViewModel) {
