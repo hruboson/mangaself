@@ -1,9 +1,10 @@
 package dev.hrubos.mangaself.view
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -13,33 +14,54 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.hrubos.mangaself.ui.components.FloatingTopMenu
+import dev.hrubos.db.Profile
+import dev.hrubos.mangaself.ui.components.AppLogo
+import dev.hrubos.mangaself.ui.components.TextH1
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
 fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
+    
+    var profiles: List<Profile> by remember { mutableStateOf(listOf<Profile>()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getProfiles { profiles = it }
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(50.dp)
     ) {
-        FloatingTopMenu()
+        AppLogo(modifier = Modifier.align(Alignment.CenterHorizontally))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        TextH1(text = "Profiles", modifier = Modifier.align(Alignment.CenterHorizontally))
 
-        Button(onClick = { onNavigateToAdd() }) {
+        /**
+         * Rows of buttons each corresponding to a profile
+         * Upon pressing the button the user is redirected to screen
+         */
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            profiles.forEach { profile ->
+                Button(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("${profile.name}")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f)) // moves last button all the way down
+        Button(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            onClick = { onNavigateToAdd() }) {
             Text("Add Profile")
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        var profilesText by remember { mutableStateOf("Loading...") }
-        LaunchedEffect(Unit) {
-            viewModel.getProfiles { profilesText = it }
-        }
-
-        Text(text = profilesText)
     }
 }

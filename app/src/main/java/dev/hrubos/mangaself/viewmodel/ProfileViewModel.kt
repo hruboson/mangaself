@@ -17,15 +17,14 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         application = application
     )
 
-    fun getProfiles(onResult: (String) -> Unit) {
+    fun getProfiles(onResult: (List<Profile>) -> Unit) {
         viewModelScope.launch {
             try {
                 val profiles = db.getProfiles()
-                val text = profiles.joinToString("\n") { "ID: ${it.id}, Name: ${it.name}" }
-                onResult(text)
+                onResult(profiles)
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to get profiles", e)
-                onResult("")
+                onResult(emptyList())
             }
         }
     }
