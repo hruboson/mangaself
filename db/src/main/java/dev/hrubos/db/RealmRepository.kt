@@ -11,6 +11,7 @@ class RealmRepository(application: android.app.Application) : Repository {
     init {
         val config = RealmConfiguration.Builder(schema = setOf(Profile::class))
             .name("app.realm")
+            .deleteRealmIfMigrationNeeded()
             .build()
         realm = Realm.open(config)
     }
@@ -24,5 +25,12 @@ class RealmRepository(application: android.app.Application) : Repository {
             copyToRealm(profile)
         }
         return profile
+    }
+
+    override suspend fun clearProfiles() {
+        realm.write {
+            val allProfiles = query<Profile>().find()
+            delete(allProfiles)
+        }
     }
 }

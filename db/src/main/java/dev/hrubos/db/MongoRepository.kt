@@ -1,11 +1,12 @@
 package dev.hrubos.db
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.gson.*
+import io.ktor.serialization.gson.gson
 
 class MongoRepository(private val baseUrl: String) : Repository {
 
@@ -21,5 +22,9 @@ class MongoRepository(private val baseUrl: String) : Repository {
         return client.post("$baseUrl/users") {
             setBody(profile)
         }.body()
+    }
+
+    override suspend fun clearProfiles() {
+        return client.post("$baseUrl/clearProfiles").body()
     }
 }

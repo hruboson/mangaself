@@ -32,6 +32,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     fun addProfile(name: String, onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             try {
+                // by default profile is marked as local
                 val profile = Profile()
                 profile.name = name
 
@@ -39,6 +40,17 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                 onComplete()
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to add profile", e)
+            }
+        }
+    }
+
+    fun clearProfiles(onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                db.clearProfiles()
+                onComplete()
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Failed to delete all profiles", e)
             }
         }
     }

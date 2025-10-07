@@ -2,11 +2,18 @@ package dev.hrubos.mangaself.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,37 +38,55 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
         viewModel.getProfiles { profiles = it }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(50.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
     ) {
-        AppLogo(modifier = Modifier.align(Alignment.CenterHorizontally))
-
-        TextH1(text = "Profiles", modifier = Modifier.align(Alignment.CenterHorizontally))
-
-        /**
-         * Rows of buttons each corresponding to a profile
-         * Upon pressing the button the user is redirected to screen
-         */
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(50.dp),
         ) {
-            profiles.forEach { profile ->
-                Button(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("${profile.name}")
+            AppLogo(modifier = Modifier.align(Alignment.CenterHorizontally))
+
+            TextH1(text = "Profiles", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+            /**
+             * Rows of buttons each corresponding to a profile
+             * Upon pressing the button the user is redirected to screen
+             */
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                profiles.forEach { profile ->
+                    Button(
+                        onClick = { /* TODO */ },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween, // text left, icon right
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = profile.name)
+
+                            // Show icon based on profile type
+                            val icon = if (profile.isLocal) Icons.Default.Storage else Icons.Default.Cloud
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = if (profile.isLocal) "Local Profile" else "Remote Profile",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.weight(1f)) // moves last button all the way down
-        Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = { onNavigateToAdd() }) {
-            Text("Add Profile")
+            Spacer(modifier = Modifier.weight(1f)) // moves last button all the way down
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { onNavigateToAdd() }) {
+                Text("Add Profile")
+            }
         }
     }
 }
