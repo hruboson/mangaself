@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -45,6 +46,8 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(50.dp),
         ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
             AppLogo(modifier = Modifier.align(Alignment.CenterHorizontally))
 
             TextH1(text = "Profiles", modifier = Modifier.align(Alignment.CenterHorizontally))
