@@ -8,10 +8,12 @@ import androidx.activity.viewModels
 import dev.hrubos.mangaself.navigation.AppNavigation
 import dev.hrubos.mangaself.ui.theme.MangaselfTheme
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
+import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
 class MainActivity : ComponentActivity() {
 
     private val profileViewModel: ProfileViewModel by viewModels()
+    private val shelfViewModel: ShelfViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MangaselfTheme {
-                AppNavigation(profileViewModel)
+                AppNavigation(profileViewModel, shelfViewModel)
             }
         }
     }

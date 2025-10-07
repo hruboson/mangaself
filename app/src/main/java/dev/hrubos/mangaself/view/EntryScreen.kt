@@ -31,7 +31,11 @@ import dev.hrubos.mangaself.ui.components.TextH1
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
-fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAddProfile: () -> Unit){
+fun EntryScreen(
+    viewModel: ProfileViewModel,
+    onNavigateToAddProfile: () -> Unit,
+    onNavigateToShelf: () -> Unit
+){
     
     var profiles: List<Profile> by remember { mutableStateOf(listOf<Profile>()) }
 
@@ -61,7 +65,7 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAddProfile: () -> Unit)
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (profiles.isEmpty()) {
-                    // Show a button or text when there are no profiles
+                    // Show a button when there are no profiles
                     Button(
                         onClick = { onNavigateToAddProfile() },
                         modifier = Modifier.fillMaxWidth()
@@ -69,10 +73,9 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAddProfile: () -> Unit)
                         Text("Add First Profile")
                     }
                 } else {
-                    // Show existing profiles
                     profiles.forEach { profile ->
                         Button(
-                            onClick = { /* TODO */ },
+                            onClick = { onNavigateToShelf() },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(

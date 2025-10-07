@@ -1,7 +1,11 @@
 package dev.hrubos.mangaself.view
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import dev.hrubos.mangaself.viewmodel.ProfileViewModel
+import androidx.compose.ui.Modifier
+import dev.hrubos.mangaself.ui.components.FloatingTopMenu
+import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
 /**
  * Shows library of user content for given profile in grid.
@@ -11,6 +15,8 @@ import dev.hrubos.mangaself.viewmodel.ProfileViewModel
  *  ?(- delete from device memory)?
  */
 @Composable
-fun ShelfScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit) {
-
+fun ShelfScreen(viewModel: ShelfViewModel) {
+    Surface (modifier = Modifier.fillMaxSize()) {
+        FloatingTopMenu()
+    }
 }
