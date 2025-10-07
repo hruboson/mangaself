@@ -1,4 +1,4 @@
-package dev.hrubos.mangaself.view
+package dev.hrubos.mangaself
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
