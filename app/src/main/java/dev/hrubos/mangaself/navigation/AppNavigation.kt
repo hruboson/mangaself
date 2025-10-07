@@ -16,7 +16,7 @@ fun AppNavigation(viewModel: ProfileViewModel) {
         composable("entry") {
             EntryScreen(
                 viewModel = viewModel,
-                onNavigateToAdd = { navController.navigate("addProfile") }
+                onNavigateToAddProfile = { navController.navigate("addProfile") }
             )
         }
 

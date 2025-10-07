@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material3.Button
@@ -30,7 +31,7 @@ import dev.hrubos.mangaself.ui.components.TextH1
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
-fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
+fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAddProfile: () -> Unit){
     
     var profiles: List<Profile> by remember { mutableStateOf(listOf<Profile>()) }
 
@@ -59,33 +60,50 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                profiles.forEach { profile ->
+                if (profiles.isEmpty()) {
+                    // Show a button or text when there are no profiles
                     Button(
-                        onClick = { /* TODO */ },
+                        onClick = { onNavigateToAddProfile() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween, // text left, icon right
-                            verticalAlignment = Alignment.CenterVertically
+                        Text("Add First Profile")
+                    }
+                } else {
+                    // Show existing profiles
+                    profiles.forEach { profile ->
+                        Button(
+                            onClick = { /* TODO */ },
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(text = profile.name)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = profile.name)
 
-                            Icon(
-                                imageVector = Icons.Default.LocalLibrary,
-                                contentDescription = "Profile",
-                                modifier = Modifier.size(20.dp)
-                            )
+                                Icon(
+                                    imageVector = Icons.Default.LocalLibrary,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // moves last button all the way down
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = { onNavigateToAdd() }) {
-                Text("Add Profile")
+            Spacer(modifier = Modifier.weight(1f)) // moves last button row all the way down
+            Row (modifier = Modifier.align(Alignment.CenterHorizontally)){
+                Button(
+                    onClick = { onNavigateToAddProfile() }) {
+                    Text("Switch Repository")
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(
+                    onClick = { onNavigateToAddProfile() }) {
+                    Text("Add Profile")
+                }
             }
         }
     }
