@@ -12,9 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.mangaself">
 
-        <!-- Entry Screen will be the default view to show up -->
         <activity
-            android:name=".view.EntryScreen"
+            android:name=".view.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

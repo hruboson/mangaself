@@ -30,11 +30,11 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
-    fun addProfile(onComplete: () -> Unit = {}) {
+    fun addProfile(name: String, onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             try {
                 val profile = Profile()
-                profile.name = "Test User ${System.currentTimeMillis() % 1000}"
+                profile.name = name
 
                 db.addProfile(profile)
                 onComplete()
