@@ -10,8 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -54,7 +53,7 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
 
             /**
              * Rows of buttons each corresponding to a profile
-             * Upon pressing the button the user is redirected to screen
+             * Upon pressing the button the user is redirected to screen tbd
              */
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -72,11 +71,9 @@ fun EntryScreen(viewModel: ProfileViewModel, onNavigateToAdd: () -> Unit){
                         ) {
                             Text(text = profile.name)
 
-                            // Show icon based on profile type
-                            val icon = if (profile.isLocal) Icons.Default.Storage else Icons.Default.Cloud
                             Icon(
-                                imageVector = icon,
-                                contentDescription = if (profile.isLocal) "Local Profile" else "Remote Profile",
+                                imageVector = Icons.Default.LocalLibrary,
+                                contentDescription = "Profile",
                                 modifier = Modifier.size(20.dp)
                             )
                         }
