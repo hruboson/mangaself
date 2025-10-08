@@ -37,7 +37,8 @@ fun AddProfileScreen(viewModel: ProfileViewModel, onBack: () -> Unit) {
             TextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") }
+                label = { Text("Name") },
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
