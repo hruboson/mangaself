@@ -1,5 +1,6 @@
 package dev.hrubos.mangaself.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -17,6 +18,10 @@ import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 @Composable
 fun ShelfScreen(viewModel: ShelfViewModel, onSettings: () -> Unit) {
     Surface (modifier = Modifier.fillMaxSize()) {
-        FloatingTopMenu(onShowFavourite = { }, onSettings = onSettings)
+        FloatingTopMenu(onShowFavourite = { }, onSettings = onSettings, onSearch = ::onSearchPlaceholder)
     }
+}
+
+fun onSearchPlaceholder(str: String){
+    Log.v("Search:", str)
 }

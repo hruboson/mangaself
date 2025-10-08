@@ -1,5 +1,6 @@
 package dev.hrubos.mangaself.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Info
@@ -17,10 +19,9 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,9 +29,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.hrubos.mangaself.model.DEFAULT_FUNC
+import dev.hrubos.mangaself.model.DEFAULT_FUNC_STRING
 
 @Composable
 fun FloatingTopMenu(
@@ -38,7 +42,8 @@ fun FloatingTopMenu(
     onBack: () -> Unit = DEFAULT_FUNC,
     onShowFavourite: () -> Unit = DEFAULT_FUNC,
     onSettings: () -> Unit = DEFAULT_FUNC,
-    onInfo: () -> Unit = DEFAULT_FUNC
+    onInfo: () -> Unit = DEFAULT_FUNC,
+    onSearch: (String) -> Unit = DEFAULT_FUNC_STRING,
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -72,7 +77,7 @@ fun FloatingTopMenu(
                     }
                     if(onShowFavourite != DEFAULT_FUNC){
                         MaterialIconButton(
-                            onClick = onBack,
+                            onClick = onShowFavourite,
                             icon = Icons.Default.StarBorder,
                             size = buttonSize
                         )
@@ -80,27 +85,43 @@ fun FloatingTopMenu(
                 }
 
                 // Center search bar
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(38.dp),
-                        placeholder = { Text("Search...") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search"
-                            )
-                        },
-                        shape = RoundedCornerShape(50)
-                    )
+                if(onSearch != DEFAULT_FUNC_STRING) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = RoundedCornerShape(50)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .height(38.dp)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(end = 4.dp)
+                                )
+                                BasicTextField(
+                                    value = searchQuery,
+                                    onValueChange = {
+                                        searchQuery = it
+                                        onSearch(it)
+                                    },
+                                    singleLine = true,
+                                    textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
+                                    modifier = Modifier.weight(1f),
+                                    cursorBrush = SolidColor(Color.White)
+                                )
+                            }
+                        }
+                    }
                 }
 
 
