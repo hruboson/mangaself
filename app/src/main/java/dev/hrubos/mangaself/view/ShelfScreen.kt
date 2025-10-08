@@ -17,6 +17,6 @@ import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 @Composable
 fun ShelfScreen(viewModel: ShelfViewModel, onSettings: () -> Unit) {
     Surface (modifier = Modifier.fillMaxSize()) {
-        FloatingTopMenu(onSettings = onSettings)
+        FloatingTopMenu(onShowFavourite = { }, onSettings = onSettings)
     }
 }
