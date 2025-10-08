@@ -136,7 +136,7 @@ fun FloatingTopMenu(
                     }
                     if(onInfo != DEFAULT_FUNC) {
                         MaterialIconButton(
-                            onClick = {},
+                            onClick = onInfo,
                             icon = Icons.Default.Info,
                             size = buttonSize
                         )

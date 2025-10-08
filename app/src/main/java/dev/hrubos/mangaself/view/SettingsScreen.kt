@@ -22,13 +22,13 @@ import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
-fun SettingsScreen(viewModel: ProfileViewModel, onBack: () -> Unit) {
+fun SettingsScreen(viewModel: ProfileViewModel, onBack: () -> Unit, onAbout: () -> Unit) {
     var name by remember { mutableStateOf("") }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
     ) {
-        FloatingTopMenu(onBack = onBack)
+        FloatingTopMenu(onBack = onBack, onInfo = onAbout)
         Column(
             modifier = Modifier
                 .fillMaxSize()

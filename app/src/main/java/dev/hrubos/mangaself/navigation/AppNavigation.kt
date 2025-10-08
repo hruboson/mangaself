@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
 import dev.hrubos.mangaself.view.SettingsScreen
@@ -50,11 +51,16 @@ fun AppNavigation(
         composable("settings") {
             SettingsScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() },
+                onAbout = { navController.navigate("about") }
+            )
+        }
+
+        composable("about") {
+            AboutScreen(
                 onBack = { navController.popBackStack() }
             )
         }
-        /*
-        composable("about") { AboutScreen() }
-        */
+
     }
 }
