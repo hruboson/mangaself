@@ -1,9 +1,12 @@
 package dev.hrubos.mangaself.ui.components
 
+import dev.hrubos.mangaself.model.DEFAULT_FUNC
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -18,18 +21,23 @@ import androidx.compose.ui.unit.dp
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 
 @Composable
 fun FloatingTopMenu(
-    buttonSize: Dp = 48.dp
+    buttonSize: Dp = 48.dp,
+    onBack: () -> Unit = DEFAULT_FUNC,
+    onSettings: () -> Unit = DEFAULT_FUNC,
+    onInfo: () -> Unit = DEFAULT_FUNC
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
+            .padding(top = 50.dp),
         contentAlignment = Alignment.TopCenter
     ) {
         Surface(
@@ -47,14 +55,31 @@ fun FloatingTopMenu(
             ) {
                 // Left buttons
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MaterialIconButton(icon = Icons.Default.Menu, size = buttonSize)
-                    MaterialIconButton(icon = Icons.Default.Add, size = buttonSize)
+                    if(onBack != DEFAULT_FUNC) {
+                        MaterialIconButton(
+                            onClick = onBack,
+                            icon = Icons.Default.ChevronLeft,
+                            size = buttonSize
+                        )
+                    }
                 }
 
                 // Right buttons
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MaterialIconButton(icon = Icons.Default.Settings, size = buttonSize)
-                    MaterialIconButton(icon = Icons.Default.Share, size = buttonSize)
+                    if(onSettings != DEFAULT_FUNC) {
+                        MaterialIconButton(
+                            onClick = onSettings,
+                            icon = Icons.Default.Settings,
+                            size = buttonSize
+                        )
+                    }
+                    if(onInfo != DEFAULT_FUNC) {
+                        MaterialIconButton(
+                            onClick = {},
+                            icon = Icons.Default.Info,
+                            size = buttonSize
+                        )
+                    }
                 }
             }
         }
@@ -62,9 +87,9 @@ fun FloatingTopMenu(
 }
 
 @Composable
-fun MaterialIconButton(icon: androidx.compose.ui.graphics.vector.ImageVector, size: Dp) {
+fun MaterialIconButton(onClick: () -> Unit, icon: androidx.compose.ui.graphics.vector.ImageVector, size: Dp) {
     IconButton(
-        onClick = { /* Handle click */ },
+        onClick = { onClick() },
         modifier = Modifier.size(size)
     ) {
         Icon(

@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
+import dev.hrubos.mangaself.view.SettingsScreen
 import dev.hrubos.mangaself.view.ShelfScreen
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
@@ -41,11 +42,18 @@ fun AppNavigation(
         composable("shelf"){
             ShelfScreen(
                 viewModel = shelfViewModel,
+                onSettings = { navController.navigate("settings") }
             )
         }
 
+
+        composable("settings") {
+            SettingsScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         /*
-        composable("settings") { SettingsScreen(viewModel) }
         composable("about") { AboutScreen() }
         */
     }

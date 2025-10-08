@@ -18,15 +18,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
-fun AddProfileScreen(viewModel: ProfileViewModel, onBack: () -> Unit) {
+fun SettingsScreen(viewModel: ProfileViewModel, onBack: () -> Unit) {
     var name by remember { mutableStateOf("") }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
     ) {
+        FloatingTopMenu(onBack = onBack)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -44,12 +46,12 @@ fun AddProfileScreen(viewModel: ProfileViewModel, onBack: () -> Unit) {
 
             Button(
                 onClick = {
-                    viewModel.addProfile(name) {
-                        onBack()
-                    }
+                    /*viewModel.changeProfileName(name) {
+
+                    }TODO*/
                 }
             ) {
-                Text("Add Profile")
+                Text("Change profile name")
             }
         }
     }
