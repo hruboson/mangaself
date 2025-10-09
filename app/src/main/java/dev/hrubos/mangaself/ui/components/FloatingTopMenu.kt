@@ -50,7 +50,7 @@ fun FloatingTopMenu(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 38.dp),
+            .padding(top = 10.dp, bottom = 10.dp),
         contentAlignment = Alignment.TopCenter
     ) {
         Surface(
