@@ -9,7 +9,7 @@ import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
 import dev.hrubos.mangaself.view.SettingsScreen
-import dev.hrubos.mangaself.view.ShelfScreen
+import dev.hrubos.mangaself.view.ShelfNavigationBar
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
@@ -49,7 +49,7 @@ fun AppNavigation(
                 profileViewModel.selectProfile(profileId)
             }
 
-            ShelfScreen(
+            ShelfNavigationBar(
                 shelfViewModel = shelfViewModel,
                 onSettings = { navController.navigate("settings") }
             )
