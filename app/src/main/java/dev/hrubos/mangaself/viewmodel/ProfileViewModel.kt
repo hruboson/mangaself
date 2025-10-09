@@ -43,6 +43,17 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
+    fun logout(onComplete: () -> Unit = {}){
+        viewModelScope.launch {
+            dataStore.edit { prefs ->
+                prefs[SELECTED_PROFILE_ID] = ""
+            }
+            Configuration.selectedProfileId = ""
+            Log.d("ProfileViewModel", "Logged out of profile")
+            onComplete()
+        }
+    }
+
     fun getProfiles(onResult: (List<Profile>) -> Unit) {
         viewModelScope.launch {
             try {

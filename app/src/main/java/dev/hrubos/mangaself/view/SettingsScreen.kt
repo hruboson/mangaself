@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -23,7 +24,12 @@ import dev.hrubos.mangaself.ui.components.ReadingModeDropdown
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
-fun SettingsScreen(viewModel: ProfileViewModel, onBack: () -> Unit, onAbout: () -> Unit) {
+fun SettingsScreen(
+    profileViewModel: ProfileViewModel,
+    onBack: () -> Unit,
+    onAbout: () -> Unit,
+    onLogout: () -> Unit,
+) {
     var name by remember { mutableStateOf("") }
 
     Surface(
@@ -51,6 +57,20 @@ fun SettingsScreen(viewModel: ProfileViewModel, onBack: () -> Unit, onAbout: () 
                     selectedText ->  val selectedMode = ReadingMode.entries.first { it.text == selectedText }
                 }
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    profileViewModel.logout {
+                        onLogout() // navigate back to EntryScreen
+                    }
+                }
+            ) {
+                Text(
+                    text = "Switch profile"
+                )
+            }
         }
     }
 }

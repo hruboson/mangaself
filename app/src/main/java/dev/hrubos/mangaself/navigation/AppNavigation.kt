@@ -60,9 +60,14 @@ fun AppNavigation(
 
         composable("settings") {
             SettingsScreen(
-                viewModel = profileViewModel,
+                profileViewModel = profileViewModel,
                 onBack = { navController.popBackStack() },
-                onAbout = { navController.navigate("about") }
+                onAbout = { navController.navigate("about") },
+                onLogout = {
+                    navController.navigate("entry") {
+                        popUpTo("entry") { inclusive = true } // clear backstack
+                    }
+                }
             )
         }
 
