@@ -34,7 +34,7 @@ import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 fun EntryScreen(
     viewModel: ProfileViewModel,
     onNavigateToAddProfile: () -> Unit,
-    onNavigateToShelf: () -> Unit
+    onNavigateToShelf: (String) -> Unit
 ){
     
     var profiles: List<Profile> by remember { mutableStateOf(listOf<Profile>()) }
@@ -75,7 +75,7 @@ fun EntryScreen(
                 } else {
                     profiles.forEach { profile ->
                         Button(
-                            onClick = { onNavigateToShelf() },
+                            onClick = { onNavigateToShelf(profile.id) },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(

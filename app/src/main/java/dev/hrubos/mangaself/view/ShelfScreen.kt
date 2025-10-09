@@ -16,7 +16,7 @@ import dev.hrubos.mangaself.viewmodel.ShelfViewModel
  *  ?(- delete from device memory)?
  */
 @Composable
-fun ShelfScreen(viewModel: ShelfViewModel, onSettings: () -> Unit) {
+fun ShelfScreen(shelfViewModel: ShelfViewModel, onSettings: () -> Unit) {
     Surface (modifier = Modifier.fillMaxSize()) {
         FloatingTopMenu(onShowFavourite = { }, onSettings = onSettings, onSearch = ::onSearchPlaceholder)
     }

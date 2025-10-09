@@ -1,6 +1,7 @@
 package dev.hrubos.mangaself.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,7 +25,9 @@ fun AppNavigation(
             EntryScreen(
                 viewModel = profileViewModel,
                 onNavigateToAddProfile = { navController.navigate("addProfile") },
-                onNavigateToShelf = { navController.navigate("shelf") }
+                onNavigateToShelf = { profileId ->
+                    navController.navigate("shelf/$profileId")
+                }
             )
         }
 
@@ -40,9 +43,14 @@ fun AppNavigation(
             ProfileDetailsScreen(profileId = profileId, viewModel = viewModel)
         }*/
 
-        composable("shelf"){
+        composable("shelf/{profileId}") { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getString("profileId") ?: return@composable
+            LaunchedEffect(profileId) {
+                profileViewModel.selectProfile(profileId)
+            }
+
             ShelfScreen(
-                viewModel = shelfViewModel,
+                shelfViewModel = shelfViewModel,
                 onSettings = { navController.navigate("settings") }
             )
         }

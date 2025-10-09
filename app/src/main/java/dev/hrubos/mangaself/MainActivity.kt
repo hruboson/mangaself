@@ -11,7 +11,6 @@ import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
 class MainActivity : ComponentActivity() {
-
     private val profileViewModel: ProfileViewModel by viewModels()
     private val shelfViewModel: ShelfViewModel by viewModels()
 
