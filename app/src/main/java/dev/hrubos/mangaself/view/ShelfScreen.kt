@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,7 +86,7 @@ fun ShelfWrapper(
 ){
     val listTabItem = listOf(
         TabItem("Library", "shelfscreen"),
-        TabItem("Add manga", "addmangascreen")
+        TabItem("Add new", "addmangascreen")
     )
     var selectedTabItem by remember { mutableIntStateOf(1) }
     val pagerState = rememberPagerState(initialPage = 0) { listTabItem.size }
@@ -96,60 +97,62 @@ fun ShelfWrapper(
         selectedTabItem = pagerState.currentPage
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        // Shared top menu
-        FloatingTopMenu(
-            onShowFavourite = { },
-            onSettings = onSettings,
-            onSearch = ::onSearchPlaceholder
-        )
-
-        // Tabs and content below the top menu
+    Surface(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = modifier.fillMaxSize()
         ) {
-            // Tab buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Shared top menu
+            FloatingTopMenu(
+                onShowFavourite = { },
+                onSettings = onSettings,
+                onSearch = ::onSearchPlaceholder
+            )
+
+            // Tabs and content below the top menu
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                listTabItem.forEachIndexed { index, tabItem ->
-                    val isSelected = index == selectedTabItem
-                    Button(
-                        onClick = { selectedTabItem = index },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isSelected)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = if (isSelected)
-                                MaterialTheme.colorScheme.onPrimary
-                            else
-                                MaterialTheme.colorScheme.onSurface
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = tabItem.name,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                // Tab buttons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listTabItem.forEachIndexed { index, tabItem ->
+                        val isSelected = index == selectedTabItem
+                        Button(
+                            onClick = { selectedTabItem = index },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSelected)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (isSelected)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = tabItem.name,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
-            }
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                when (page) {
-                    0 -> ShelfScreen(shelfViewModel, onSettings)
-                    1 -> AddMangaScreen(shelfViewModel, onFolderSelected)
-                    else -> Text("Unknown Screen")
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    when (page) {
+                        0 -> ShelfScreen(shelfViewModel, onSettings)
+                        1 -> AddMangaScreen(shelfViewModel, onFolderSelected)
+                        else -> Text("Unknown Screen")
+                    }
                 }
             }
         }
