@@ -1,5 +1,6 @@
 package dev.hrubos.mangaself.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
@@ -9,7 +10,7 @@ import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
 import dev.hrubos.mangaself.view.SettingsScreen
-import dev.hrubos.mangaself.view.ShelfNavigationBar
+import dev.hrubos.mangaself.view.ShelfWrapper
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
@@ -49,9 +50,10 @@ fun AppNavigation(
                 profileViewModel.selectProfile(profileId)
             }
 
-            ShelfNavigationBar(
+            ShelfWrapper(
                 shelfViewModel = shelfViewModel,
-                onSettings = { navController.navigate("settings") }
+                onSettings = { navController.navigate("settings") },
+                onFolderSelected = { uri -> Log.v("FOLDER SELECTED:", uri.path ?: "None selected") }
             )
         }
 

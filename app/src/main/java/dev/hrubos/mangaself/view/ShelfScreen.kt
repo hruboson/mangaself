@@ -1,6 +1,9 @@
 package dev.hrubos.mangaself.view
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,27 +43,45 @@ data class TabItem(
  *  ?(- delete from device memory)?
  */
 @Composable
-fun ShelfScreen(shelfViewModel: ShelfViewModel, onSettings: () -> Unit) {
-    Surface (modifier = Modifier.fillMaxSize()) {
+fun ShelfScreen(
+    shelfViewModel: ShelfViewModel,
+    onSettings: () -> Unit
+) {
 
-    }
 }
 
 @Composable
-fun AddMangaScreen(modifier: Modifier = Modifier) {
+fun AddMangaScreen(
+    shelfViewModel: ShelfViewModel,
+    onFolderSelected: (Uri) -> Unit
+) {
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri: Uri? ->
+        uri?.let { onFolderSelected(it) }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("Add manga screen")
+        Button(
+            onClick = {folderPickerLauncher.launch(null) }
+        ) {
+            Text(
+                text = "Browse local files",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 
 @Composable
-fun ShelfNavigationBar(
+fun ShelfWrapper(
     modifier: Modifier = Modifier,
     shelfViewModel: ShelfViewModel,
     onSettings: () -> Unit,
+    onFolderSelected: (Uri) -> Unit,
 ){
     val listTabItem = listOf(
         TabItem("Library", "shelfscreen"),
@@ -128,7 +148,7 @@ fun ShelfNavigationBar(
             ) { page ->
                 when (page) {
                     0 -> ShelfScreen(shelfViewModel, onSettings)
-                    1 -> AddMangaScreen()
+                    1 -> AddMangaScreen(shelfViewModel, onFolderSelected)
                     else -> Text("Unknown Screen")
                 }
             }
