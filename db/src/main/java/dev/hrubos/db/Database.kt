@@ -25,4 +25,6 @@ class Database(
     suspend fun getProfiles(): List<Profile> = repository.getAllProfiles()
     suspend fun addProfile(profile: Profile): Profile = repository.insertProfile(profile)
     suspend fun clearProfiles() = repository.clearProfiles()
+
+    suspend fun updateProfile(profile: Profile) = repository.updateProfile(profile)
 }

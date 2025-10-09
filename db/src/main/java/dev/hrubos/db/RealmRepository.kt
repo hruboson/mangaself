@@ -2,6 +2,7 @@ package dev.hrubos.db
 
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 
 class RealmRepository(application: android.app.Application) : Repository {
@@ -32,5 +33,12 @@ class RealmRepository(application: android.app.Application) : Repository {
             val allProfiles = query<Profile>().find()
             delete(allProfiles)
         }
+    }
+
+    override suspend fun updateProfile(profile: Profile): Profile {
+        realm.write {
+            copyToRealm(profile, updatePolicy = UpdatePolicy.ALL)
+        }
+        return profile
     }
 }

@@ -27,4 +27,13 @@ class MongoRepository(private val baseUrl: String) : Repository {
     override suspend fun clearProfiles() {
         return client.post("$baseUrl/clearProfiles").body()
     }
+
+    override suspend fun updateProfile(profile: Profile): Profile {
+        return client.post("$baseUrl/updateProfile") {
+            setBody(profile)
+        }.body()
+        /*return client.post("$baseUrl/updateProfile/"){
+            //TODO
+        }*/
+    }
 }
