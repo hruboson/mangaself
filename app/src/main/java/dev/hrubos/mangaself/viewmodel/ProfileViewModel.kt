@@ -10,13 +10,20 @@ import dev.hrubos.db.Database
 import dev.hrubos.db.Profile
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.model.dataStore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(application: Application): AndroidViewModel(application) {
 
     private val dataStore = application.dataStore
-    private val SELECTED_PROFILE_ID = stringPreferencesKey("selected_profile_id")
+    private val LAST_SELECTED_PROFILE_ID = stringPreferencesKey("selected_profile_id")
+
+    private val _selectedProfile = MutableStateFlow<Profile?>(null)
+    val selectedProfile: StateFlow<Profile?> = _selectedProfile.asStateFlow()
 
     // will be assigned on initialization
     private val db = Database(
@@ -26,7 +33,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     init {
         viewModelScope.launch {
-            dataStore.data.map { it[SELECTED_PROFILE_ID] }
+            dataStore.data.map { it[LAST_SELECTED_PROFILE_ID] }
                 .collect { id ->
                     Configuration.selectedProfileId = id
                 }
@@ -36,21 +43,51 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     fun selectProfile(profileId: String) {
         viewModelScope.launch {
             dataStore.edit { prefs ->
-                prefs[SELECTED_PROFILE_ID] = profileId
+                prefs[LAST_SELECTED_PROFILE_ID] = profileId
             }
-            Configuration.selectedProfileId = profileId
-            Log.d("ProfileViewModel", "Selected profile: $profileId")
+
+            runCatching {
+                db.getProfile(profileId)
+            }.onSuccess { profile ->
+                _selectedProfile.value = profile
+                Configuration.selectedProfileId = profileId
+                Log.d("ProfileViewModel", "Selected profile: ${profile.name}")
+            }.onFailure {
+                Log.e("ProfileViewModel", "Profile not found: $profileId")
+            }
         }
     }
 
     fun logout(onComplete: () -> Unit = {}){
         viewModelScope.launch {
             dataStore.edit { prefs ->
-                prefs[SELECTED_PROFILE_ID] = ""
+                prefs[LAST_SELECTED_PROFILE_ID] = ""
             }
             Configuration.selectedProfileId = ""
+            _selectedProfile.value = null
+
             Log.d("ProfileViewModel", "Logged out of profile")
             onComplete()
+        }
+    }
+
+    suspend fun restoreLastSelectedProfile(): Profile? {
+        val id = dataStore.data.first()[LAST_SELECTED_PROFILE_ID]
+        return if (id != null) {
+            runCatching { db.getProfile(id) }
+                .onSuccess { profile ->
+                    _selectedProfile.value = profile
+                    Configuration.selectedProfileId = id
+                    Log.d("ProfileViewModel", "Restored last selected profile: ${profile.name}")
+                }
+                .onFailure {
+                    Log.e("ProfileViewModel", "Failed to restore profile $id: ${it.message}")
+                    _selectedProfile.value = null
+                }
+                .getOrNull()
+        } else {
+            _selectedProfile.value = null
+            null
         }
     }
 

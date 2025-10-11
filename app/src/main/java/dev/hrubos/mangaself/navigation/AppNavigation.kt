@@ -30,6 +30,16 @@ fun AppNavigation(
                     navController.navigate("shelf/$profileId")
                 }
             )
+
+            LaunchedEffect(Unit) {
+                val restored = profileViewModel.restoreLastSelectedProfile()
+                restored?.let { profile ->
+                    // If a profile was restored, skip to shelf
+                    navController.navigate("shelf/${profile.id}") {
+                        popUpTo("entry") { inclusive = true }
+                    }
+                }
+            }
         }
 
         composable("addProfile") {

@@ -1,7 +1,6 @@
 package dev.hrubos.mangaself
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -18,9 +17,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // TODO remove after testing
-        profileViewModel.clearProfiles {
+        /*profileViewModel.clearProfiles {
             Log.d("MainActivity", "Profiles cleared successfully")
-        }
+        }*/
 
         setContent {
             MangaselfTheme {
