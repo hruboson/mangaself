@@ -70,10 +70,10 @@ Subject to change
 ### MongoDB collection specification:
 - Create two collections 
     - Manga
-    - User (profiles)
+    - Profile
 - Each collection is described by at least 3 fields 
     - Manga:
-        1. ID\<UUID\>
+        1. systemPath\<String\>\<PrimaryKey\>
         2. title\<String\>
         3. description\<String\>
         4. chapters\<Object\>
@@ -83,12 +83,13 @@ Subject to change
             4. pageLastRead\<Int\>
             5. read\<Boolean\> 
         5. favourite\<Boolean\>
-        6. systemPath\<String\>
-    - User (profiles):
+
+    - Profile:
         1. ID\<UUID\>
         2. name\<String\>
         3. settings\<Object\>
-            1. darkMode\<Boolean\>
+           1. darkMode\<Boolean\>
+           2. readingMode\<String\> 
         4. associatedManga\<List\<Manga\>\>
 - Each collection contains at least 5 documents.
 - There must be a common field between both collections (typically, an ID).
