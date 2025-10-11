@@ -7,10 +7,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
+import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
 data class TabItem(
@@ -41,19 +46,47 @@ data class TabItem(
  * Batch actions:
  *  - mark favourite
  *  - remove from library
- *  ?(- delete from device memory)?
+ *  - ?(delete from device memory)?
  */
 @Composable
 fun ShelfScreen(
     shelfViewModel: ShelfViewModel,
-    onSettings: () -> Unit
+    profileViewModel: ProfileViewModel,
 ) {
+    val selectedProfile by profileViewModel.selectedProfile.collectAsState()
+    val publications by shelfViewModel.publications.collectAsState(emptyList())
 
+    LaunchedEffect(Unit) {
+        selectedProfile?.let { profile ->
+            shelfViewModel.loadPublicationsOfProfile(profile.id)
+        }
+    }
+
+    // Simple Column with top bar and list
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        // List of publication titles
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(publications) { publication ->
+                Text(
+                    text = publication.title,
+                    //style = MaterialTheme.typography.body1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
 fun AddMangaScreen(
     shelfViewModel: ShelfViewModel,
+    profileViewModel: ProfileViewModel,
     onFolderSelected: (Uri) -> Unit
 ) {
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -81,6 +114,7 @@ fun AddMangaScreen(
 fun ShelfWrapper(
     modifier: Modifier = Modifier,
     shelfViewModel: ShelfViewModel,
+    profileViewModel: ProfileViewModel,
     onSettings: () -> Unit,
     onFolderSelected: (Uri) -> Unit,
 ){
@@ -149,8 +183,8 @@ fun ShelfWrapper(
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     when (page) {
-                        0 -> ShelfScreen(shelfViewModel, onSettings)
-                        1 -> AddMangaScreen(shelfViewModel, onFolderSelected)
+                        0 -> ShelfScreen(shelfViewModel, profileViewModel)
+                        1 -> AddMangaScreen(shelfViewModel, profileViewModel, onFolderSelected)
                         else -> Text("Unknown Screen")
                     }
                 }

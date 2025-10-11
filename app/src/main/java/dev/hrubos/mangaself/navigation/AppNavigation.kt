@@ -62,6 +62,7 @@ fun AppNavigation(
 
             ShelfWrapper(
                 shelfViewModel = shelfViewModel,
+                profileViewModel = profileViewModel,
                 onSettings = { navController.navigate("settings") },
                 onFolderSelected = { uri -> Log.v("FOLDER SELECTED:", uri.path ?: "None selected") }
             )
