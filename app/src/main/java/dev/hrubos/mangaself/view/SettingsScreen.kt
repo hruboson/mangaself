@@ -56,6 +56,7 @@ fun SettingsScreen(
                     name = newValue
                     profileViewModel.updateProfileName(newValue)
                 },
+                singleLine = true,
                 label = { Text("Name") }
             )
 
