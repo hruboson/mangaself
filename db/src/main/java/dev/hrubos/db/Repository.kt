@@ -5,5 +5,6 @@ interface Repository {
     suspend fun getAllProfiles(): List<Profile>
     suspend fun insertProfile(profile: Profile): Profile
     suspend fun clearProfiles()
-    suspend fun updateProfile(profile: Profile): Profile
+
+    suspend fun updateProfileName(profile: Profile, name: String)
 }

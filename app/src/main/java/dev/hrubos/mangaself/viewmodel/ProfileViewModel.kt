@@ -73,19 +73,20 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     suspend fun restoreLastSelectedProfile(): Profile? {
         val id = dataStore.data.first()[LAST_SELECTED_PROFILE_ID]
-        return if (id != null) {
-            runCatching { db.getProfile(id) }
-                .onSuccess { profile ->
-                    _selectedProfile.value = profile
-                    Configuration.selectedProfileId = id
-                    Log.d("ProfileViewModel", "Restored last selected profile: ${profile.name}")
-                }
-                .onFailure {
-                    Log.e("ProfileViewModel", "Failed to restore profile $id: ${it.message}")
-                    _selectedProfile.value = null
-                }
-                .getOrNull()
-        } else {
+
+        if (id == null) {
+            _selectedProfile.value = null
+            return null
+        }
+
+        return try {
+            val profile = db.getProfile(id)
+            _selectedProfile.value = profile
+            Configuration.selectedProfileId = id
+            Log.d("ProfileViewModel", "Restored last selected profile: ${profile.name}")
+            profile
+        } catch (e: Exception) {
+            Log.e("ProfileViewModel", "Failed to restore profile $id: ${e.message}", e)
             _selectedProfile.value = null
             null
         }
@@ -114,6 +115,20 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                 onComplete()
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to add profile", e)
+            }
+        }
+    }
+
+    fun updateProfileName(newName: String) {
+        val current = _selectedProfile.value ?: return
+
+        viewModelScope.launch {
+            try {
+                db.updateProfileName(current, newName)
+                _selectedProfile.value = current
+                Log.d("ProfileViewModel", "Profile name updated: $newName")
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Failed to update profile", e)
             }
         }
     }

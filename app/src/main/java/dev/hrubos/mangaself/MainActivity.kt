@@ -1,6 +1,7 @@
 package dev.hrubos.mangaself
 
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,9 +30,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // TODO remove after testing
-        /*profileViewModel.clearProfiles {
+        profileViewModel.clearProfiles {
             Log.d("MainActivity", "Profiles cleared successfully")
-        }*/
+        }
 
         // disable edge-to-edge on newer phones
         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)

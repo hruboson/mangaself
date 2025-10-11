@@ -32,12 +32,9 @@ class MongoRepository(private val baseUrl: String) : Repository {
         return client.post("$baseUrl/clearProfiles").body()
     }
 
-    override suspend fun updateProfile(profile: Profile): Profile {
+    override suspend fun updateProfileName(profile: Profile, name: String) {
         return client.post("$baseUrl/updateProfile") {
             setBody(profile)
         }.body()
-        /*return client.post("$baseUrl/updateProfile/"){
-            //TODO
-        }*/
     }
 }

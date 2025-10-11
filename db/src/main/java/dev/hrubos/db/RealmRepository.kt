@@ -2,7 +2,6 @@ package dev.hrubos.db
 
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
-import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 
 class RealmRepository(application: android.app.Application) : Repository {
@@ -24,7 +23,7 @@ class RealmRepository(application: android.app.Application) : Repository {
     }
 
     override suspend fun getAllProfiles(): List<Profile> {
-        return realm.query<Profile>().find().toList() // returns a List<Profile>
+        return realm.query<Profile>().find().toList()
     }
 
     override suspend fun insertProfile(profile: Profile): Profile {
@@ -41,10 +40,10 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
-    override suspend fun updateProfile(profile: Profile): Profile {
+    override suspend fun updateProfileName(profile: Profile, name: String) {
         realm.write {
-            copyToRealm(profile, updatePolicy = UpdatePolicy.ALL)
+            val managedProfile = findLatest(profile) ?: return@write
+            managedProfile.name = name
         }
-        return profile
     }
 }

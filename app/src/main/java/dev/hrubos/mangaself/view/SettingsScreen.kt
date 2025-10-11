@@ -11,6 +11,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +32,12 @@ fun SettingsScreen(
     onAbout: () -> Unit,
     onLogout: () -> Unit,
 ) {
-    var name by remember { mutableStateOf("") }
+    val currentProfile by profileViewModel.selectedProfile.collectAsState()
+    var name by remember { mutableStateOf(currentProfile?.name ?: "") }
+
+    LaunchedEffect(currentProfile) {
+        currentProfile?.let { name = it.name }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -45,7 +52,10 @@ fun SettingsScreen(
         ) {
             TextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = { newValue ->
+                    name = newValue
+                    profileViewModel.updateProfileName(newValue)
+                },
                 label = { Text("Name") }
             )
 
