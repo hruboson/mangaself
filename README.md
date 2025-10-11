@@ -95,6 +95,25 @@ Subject to change
 - There must be a common field between both collections (typically, an ID).
 - One of the collections must define a text (search) index.
 
+#### Hierarchy summary
+Profile
+ ├─ ID : UUID (PrimaryKey)
+ ├─ name : String
+ ├─ settings : Settings
+ │    ├─ darkMode : Boolean
+ │    └─ readingMode : String
+ └─ associatedManga : List<Manga>
+        ├─ systemPath : String (PrimaryKey)
+        ├─ title : String
+        ├─ description : String
+        ├─ favourite : Boolean
+        └─ chapters : List<Chapter>
+                ├─ title : String
+                ├─ description : String
+                ├─ pages : Int
+                ├─ pageLastRead : Int
+                └─ read : Boolean
+
 ### API Project specification:
 - The API must expose at least 7 endpoints:
     - Get all documents from one collection
