@@ -34,9 +34,13 @@ fun SettingsScreen(
 ) {
     val currentProfile by profileViewModel.selectedProfile.collectAsState()
     var name by remember { mutableStateOf(currentProfile?.name ?: "") }
+    var readingMode by remember { mutableStateOf(currentProfile?.readingMode ?: ReadingMode.LEFTTORIGHT) }
 
     LaunchedEffect(currentProfile) {
-        currentProfile?.let { name = it.name }
+        currentProfile?.let {
+            name = it.name
+            readingMode = it.readingMode
+        }
     }
 
     Surface(
@@ -63,9 +67,10 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             ReadingModeDropdown(
-                selectedOption = ReadingMode.LONGSTRIP.text,  //TODO Get from profile
+                selectedOption = readingMode.toString(),
                 onChange = {
                     selectedText ->  val selectedMode = ReadingMode.entries.first { it.text == selectedText }
+                    profileViewModel.updateProfileReadingMode(selectedMode.text) // this is not optimal to store the whole string in db but whatever :-)
                 }
             )
 

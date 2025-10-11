@@ -8,4 +8,5 @@ class Profile : RealmObject {
     @PrimaryKey
     var id: String = UUID.randomUUID().toString()
     var name: String = ""
+    var readingMode: String = ""
 }

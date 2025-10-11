@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import dev.hrubos.db.Database
 import dev.hrubos.db.Profile
 import dev.hrubos.mangaself.model.Configuration
+import dev.hrubos.mangaself.model.ReadingMode
 import dev.hrubos.mangaself.model.dataStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -110,6 +111,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                 // by default profile is marked as local
                 val profile = Profile()
                 profile.name = name
+                profile.readingMode = ReadingMode.LEFTTORIGHT.text // not optimal to store the whole string but w/e :-)
 
                 db.addProfile(profile)
                 onComplete()
@@ -120,13 +122,29 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     }
 
     fun updateProfileName(newName: String) {
+        updateProfile(name = newName)
+    }
+
+    fun updateProfileReadingMode(newReadingMode: String) {
+        updateProfile(readingMode = newReadingMode)
+    }
+
+    private fun updateProfile(name:String = "", readingMode:String = ""){
         val current = _selectedProfile.value ?: return
+        var newName = current.name
+        var newReadingMode = current.readingMode
+        if(name != ""){
+            newName = name
+        }
+        if(readingMode != ""){
+            newReadingMode = readingMode
+        }
 
         viewModelScope.launch {
             try {
-                db.updateProfile(current, newName)
+                db.updateProfile(current, newName, newReadingMode)
                 _selectedProfile.value = current
-                Log.d("ProfileViewModel", "Profile name updated: $newName")
+                Log.d("ProfileViewModel", "Profile updated: $newName, $newReadingMode")
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to update profile", e)
             }
