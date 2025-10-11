@@ -90,6 +90,7 @@ Subject to change
         3. settings\<Object\>
            1. darkMode\<Boolean\>
            2. readingMode\<String\> 
+           3. onPublicationClick\<String\> /* whether to go to last chapter or to publication detail on pub click */
         4. associatedManga\<List\<Manga\>\>
 - Each collection contains at least 5 documents.
 - There must be a common field between both collections (typically, an ID).
