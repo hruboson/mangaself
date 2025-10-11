@@ -1,14 +1,19 @@
 package dev.hrubos.mangaself.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +40,7 @@ fun SettingsScreen(
     val currentProfile by profileViewModel.selectedProfile.collectAsState()
     var name by remember { mutableStateOf(currentProfile?.name ?: "") }
     var readingMode by remember { mutableStateOf(currentProfile?.readingMode ?: ReadingMode.LEFTTORIGHT) }
+    var showDeleteDialog by remember { mutableStateOf(false) } // dialog state
 
     LaunchedEffect(currentProfile) {
         currentProfile?.let {
@@ -47,46 +53,96 @@ fun SettingsScreen(
         modifier = Modifier.fillMaxSize(),
     ) {
         FloatingTopMenu(onBack = onBack, onInfo = onAbout)
-        Column(
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
-            TextField(
-                value = name,
-                onValueChange = { newValue ->
-                    name = newValue
-                    profileViewModel.updateProfileName(newValue)
-                },
-                singleLine = true,
-                label = { Text("Name") }
-            )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ReadingModeDropdown(
-                selectedOption = readingMode.toString(),
-                onChange = {
-                    selectedText ->  val selectedMode = ReadingMode.entries.first { it.text == selectedText }
-                    profileViewModel.updateProfileReadingMode(selectedMode.text) // this is not optimal to store the whole string in db but whatever :-)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    profileViewModel.logout {
-                        onLogout() // navigate back to EntryScreen
-                    }
-                }
+            // Center section (text field + dropdown)
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Switch profile"
+                TextField(
+                    value = name,
+                    onValueChange = { newValue ->
+                        name = newValue
+                        profileViewModel.updateProfileName(newValue)
+                    },
+                    singleLine = true,
+                    label = { Text("Name") },
+                )
+
+                ReadingModeDropdown(
+                    selectedOption = readingMode.toString(),
+                    onChange = { selectedText ->
+                        val selectedMode = ReadingMode.entries.first { it.text == selectedText }
+                        profileViewModel.updateProfileReadingMode(selectedMode.text)
+                    }
                 )
             }
+
+            // Bottom buttons row
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = {
+                        profileViewModel.logout {
+                            onLogout()
+                        }
+                    },
+                    modifier = Modifier.weight(0.6f)
+                ) {
+                    Text("Switch profile")
+                }
+
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.weight(0.4f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete profile")
+                }
+            }
+        }
+
+        // Confirm delete popup
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete Profile $name") },
+                text = { Text("Are you sure you want to delete this profile? This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            profileViewModel.deleteProfile {
+                                profileViewModel.logout {
+                                    onLogout()
+                                }
+                            }
+                        }
+                    ) {
+                        Text("Yes, delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

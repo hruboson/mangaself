@@ -33,6 +33,13 @@ class RealmRepository(application: android.app.Application) : Repository {
         return profile
     }
 
+    override suspend fun deleteProfile(profile: Profile) {
+        realm.write {
+            val managedProfile = findLatest(profile) ?: return@write
+            delete(managedProfile)
+        }
+    }
+
     override suspend fun clearProfiles() {
         realm.write {
             val allProfiles = query<Profile>().find()

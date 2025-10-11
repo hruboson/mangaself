@@ -151,6 +151,20 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
+    fun deleteProfile(onComplete: () -> Unit = {}) { // deletes currently selected profile
+        val current = _selectedProfile.value ?: return
+
+        viewModelScope.launch {
+            try {
+                db.deleteProfile(current)
+                Log.d("ProfileViewModel", "Deleted profile")
+                onComplete()
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Failed to delete profile", e)
+            }
+        }
+    }
+
     fun clearProfiles(onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             try {

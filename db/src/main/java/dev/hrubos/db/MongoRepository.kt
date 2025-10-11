@@ -8,6 +8,14 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.serialization.gson.gson
 
+/**
+ *
+ *
+ *  TODO THIS WHOLE CLASS, THE REQUESTS ARE GIBBERISH NOW
+ *
+ *
+ */
+
 class MongoRepository(private val baseUrl: String) : Repository {
 
     private val client = HttpClient {
@@ -26,6 +34,10 @@ class MongoRepository(private val baseUrl: String) : Repository {
         return client.post("$baseUrl/users") {
             setBody(profile)
         }.body()
+    }
+
+    override suspend fun deleteProfile(profile: Profile) {
+        return client.post("$baseUrl/deleteProfile/").body()
     }
 
     override suspend fun clearProfiles() {
