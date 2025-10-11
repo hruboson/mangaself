@@ -17,6 +17,12 @@ class RealmRepository(application: android.app.Application) : Repository {
         realm = Realm.open(config)
     }
 
+    override suspend fun getProfile(id: String): Profile  {
+        val profile = realm.query<Profile>("id == $0", id).first().find()
+
+        return profile ?: throw NoSuchElementException("Profile with id $id not found")
+    }
+
     override suspend fun getAllProfiles(): List<Profile> {
         return realm.query<Profile>().find().toList() // returns a List<Profile>
     }

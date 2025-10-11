@@ -14,6 +14,10 @@ class MongoRepository(private val baseUrl: String) : Repository {
         install(ContentNegotiation) { gson() }
     }
 
+    override suspend fun getProfile(id: String): Profile {
+        return client.get("$baseUrl/profile/$id").body()
+    }
+
     override suspend fun getAllProfiles(): List<Profile> {
         return client.get("$baseUrl/profiles").body()
     }
