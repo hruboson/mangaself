@@ -124,7 +124,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
         viewModelScope.launch {
             try {
-                db.updateProfileName(current, newName)
+                db.updateProfile(current, newName)
                 _selectedProfile.value = current
                 Log.d("ProfileViewModel", "Profile name updated: $newName")
             } catch (e: Exception) {

@@ -40,7 +40,7 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
-    override suspend fun updateProfileName(profile: Profile, name: String) {
+    override suspend fun updateProfile(profile: Profile, name: String) {
         realm.write {
             val managedProfile = findLatest(profile) ?: return@write
             managedProfile.name = name
