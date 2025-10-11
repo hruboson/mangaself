@@ -1,11 +1,12 @@
 package dev.hrubos.mangaself.navigation
 
-import android.util.Log
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
@@ -49,11 +50,6 @@ fun AppNavigation(
             )
         }
 
-        /*composable("profileDetails/{profileId}") { backStackEntry ->
-            val profileId = backStackEntry.arguments?.getString("profileId") ?: ""
-            ProfileDetailsScreen(profileId = profileId, viewModel = viewModel)
-        }*/
-
         composable("shelf/{profileId}") { backStackEntry ->
             val profileId = backStackEntry.arguments?.getString("profileId") ?: return@composable
             LaunchedEffect(profileId) {
@@ -64,8 +60,17 @@ fun AppNavigation(
                 shelfViewModel = shelfViewModel,
                 profileViewModel = profileViewModel,
                 onSettings = { navController.navigate("settings") },
-                onFolderSelected = { uri -> Log.v("FOLDER SELECTED:", uri.path ?: "None selected") }
+                onFolderSelected = { uri ->
+                    val publicationPathEncoded = Uri.encode(uri.toString())
+                    shelfViewModel.addPublication(Configuration.selectedProfileId ?: "", uri)
+                    navController.navigate("publicationDetail/$publicationPathEncoded")
+                }
             )
+        }
+
+        composable("publicationDetail/{publicationPath}") { backStackEntry ->
+            val publicationPath = backStackEntry.arguments?.getString("publicationPath") ?: return@composable
+            //TODO
         }
 
 

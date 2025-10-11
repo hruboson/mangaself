@@ -72,7 +72,7 @@ fun ShelfScreen(
         ) {
             items(publications) { publication ->
                 Text(
-                    text = publication.title,
+                    text = publication.systemPath,
                     //style = MaterialTheme.typography.body1,
                     modifier = Modifier
                         .fillMaxWidth()

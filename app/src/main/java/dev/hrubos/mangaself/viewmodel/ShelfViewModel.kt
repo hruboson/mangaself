@@ -1,6 +1,7 @@
 package dev.hrubos.mangaself.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,5 +44,17 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 Log.e("ShelfViewModel", "Failed to load profile publications", e)
                 _publications.value = emptyList()
             }
-        }    }
+        }
+    }
+
+    fun addPublication(profileId: String = "", uri: Uri){
+        if(profileId == "") return
+        viewModelScope.launch {
+            try {
+                db.addPublication(profileId, uri)
+            } catch (e: Exception) {
+                Log.e("ShelfViewModel", "Failed to add publication with path ${uri.toString()}", e)
+            }
+        }
+    }
 }
