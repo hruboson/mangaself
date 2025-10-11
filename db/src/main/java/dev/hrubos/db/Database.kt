@@ -1,5 +1,7 @@
 package dev.hrubos.db
 
+import android.net.Uri
+
 class Database(
     useLocal: Boolean,
     application: android.app.Application? = null, // only needed for Realm
@@ -28,4 +30,9 @@ class Database(
     suspend fun deleteProfile(profile: Profile) = repository.deleteProfile(profile)
     suspend fun clearProfiles() = repository.clearProfiles()
     suspend fun updateProfile(profile: Profile, name: String, readingMode: String) = repository.updateProfile(profile, name, readingMode)
+
+    suspend fun addPublication(profileId: String, path: Uri, title: String, description: String) = repository.addPublication(profileId, path, title, description)
+    suspend fun addChapterToPublication(pubUri: Uri, title: String, description: String, pages: Int, pageLastRead: Int = 0, read: Boolean = false) = repository.addChapterToPublication(pubUri, title, description, pages, pageLastRead, read)
+    suspend fun getAllPublications() = repository.getAllPublications()
+    suspend fun getAllPublicationsOfProfile(profileId: String) = repository.getAllPublicationsOfProfile(profileId)
 }
