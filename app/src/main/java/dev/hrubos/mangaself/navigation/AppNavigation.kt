@@ -64,13 +64,18 @@ fun AppNavigation(
                     val publicationPathEncoded = Uri.encode(uri.toString())
                     shelfViewModel.addPublication(Configuration.selectedProfileId ?: "", uri)
                     navController.navigate("publicationDetail/$publicationPathEncoded")
+                },
+                onPublicationClick = { publication ->
+                    val encodedUri = Uri.encode(publication.systemPath)
+                    navController.navigate("publicationDetail/$encodedUri")
                 }
             )
         }
 
         composable("publicationDetail/{publicationPath}") { backStackEntry ->
-            val publicationPath = backStackEntry.arguments?.getString("publicationPath") ?: return@composable
-            //TODO
+            val publicationPathEncoded = backStackEntry.arguments?.getString("publicationPath") ?: return@composable
+            val publicationPath = Uri.decode(publicationPathEncoded)
+
         }
 
 
