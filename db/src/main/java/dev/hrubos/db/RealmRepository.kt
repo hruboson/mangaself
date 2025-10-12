@@ -134,6 +134,24 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
+    override suspend fun removePublicationFromProfile(profileId: String, systemPath: String) {
+        realm.write {
+            val profile = query<Profile>("id == $0", profileId).first().find()
+                ?: throw IllegalArgumentException("Profile not found")
+
+            val publication = query<Publication>("systemPath == $0", systemPath).first().find()
+                ?: return@write
+
+            profile.associatedPublications.remove(publication)
+
+            // remove completely if no more references in profile
+            val stillReferenced = query<Profile>().find().any { it.associatedPublications.contains(publication) }
+            if (!stillReferenced) {
+                delete(publication)
+            }
+        }
+    }
+
     override suspend fun clearPublications(){
         realm.write {
             val all = query<Publication>().find()

@@ -86,6 +86,14 @@ class MongoRepository(private val baseUrl: String) : Repository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun removePublicationFromProfile(
+        profileId: String,
+        systemPath: String
+    ) {
+        TODO("Not yet implemented")
+    }
+
+
     override suspend fun clearPublications() {
         TODO("Not yet implemented")
     }

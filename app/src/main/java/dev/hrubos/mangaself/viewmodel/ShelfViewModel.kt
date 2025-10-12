@@ -73,10 +73,16 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun removePublication(){
+    fun removePublication(profileId: String?){
         val systemPath = _publication.value?.systemPath ?: return
         viewModelScope.launch {
-            db.removePublication(systemPath)
+            if(profileId == null){
+                // remove from all profiles
+                db.removePublication(systemPath)
+            }else {
+                // remove from specified profile
+                db.removePublicationFromProfile(profileId, systemPath)
+            }
             _publication.value = null
         }
     }

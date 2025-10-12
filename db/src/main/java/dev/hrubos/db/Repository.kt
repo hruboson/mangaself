@@ -14,5 +14,6 @@ interface Repository {
     suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication>
     suspend fun getPublicationBySystemPath(systemPath: String): Publication
     suspend fun removePublication(systemPath: String)
+    suspend fun removePublicationFromProfile(profileId: String, systemPath: String)
     suspend fun clearPublications()
 }

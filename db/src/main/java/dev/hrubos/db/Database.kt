@@ -35,5 +35,6 @@ class Database(
     suspend fun getAllPublicationsOfProfile(profileId: String) = repository.getAllPublicationsOfProfile(profileId)
     suspend fun getPublicationBySystemPath(systemPath: String) = repository.getPublicationBySystemPath(systemPath)
     suspend fun removePublication(systemPath: String) = repository.removePublication(systemPath)
+    suspend fun removePublicationFromProfile(profileId: String, systemPath: String) = repository.removePublicationFromProfile(profileId, systemPath)
     suspend fun clearPublications() = repository.clearPublications()
 }

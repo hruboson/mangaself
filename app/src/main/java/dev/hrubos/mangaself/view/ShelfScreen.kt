@@ -54,6 +54,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.R
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
@@ -335,7 +336,7 @@ fun PublicationDetail(
 
             Button(
                 onClick = {
-                    shelfViewModel.removePublication()
+                    shelfViewModel.removePublication(profileId = Configuration.selectedProfileId)
                     onBack()
                 },
                 colors = ButtonDefaults.buttonColors(
