@@ -79,6 +79,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
     implementation("io.ktor:ktor-serialization-gson:2.3.5")
 
-    // Images
+    // Files
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("androidx.documentfile:documentfile:1.1.0")
 }

@@ -1,12 +1,11 @@
 package dev.hrubos.mangaself.navigation
 
-import android.net.Uri
+import android.util.Base64
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
@@ -62,12 +61,14 @@ fun AppNavigation(
                 profileViewModel = profileViewModel,
                 onSettings = { navController.navigate("settings") },
                 onFolderSelected = { uri ->
-                    val publicationPathEncoded = Uri.encode(uri.toString())
-                    shelfViewModel.addPublication(Configuration.selectedProfileId ?: "", uri)
+                    shelfViewModel.handlePickedFolder(uri)
+
+                    // auto navigate to publication detail
+                    val publicationPathEncoded = Base64.encodeToString(uri.toString().toByteArray(), Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
                     navController.navigate("publicationDetail/$publicationPathEncoded")
                 },
                 onPublicationClick = { publication ->
-                    val encodedUri = Uri.encode(publication.systemPath)
+                    val encodedUri = Base64.encodeToString(publication.systemPath.toByteArray(), Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
                     navController.navigate("publicationDetail/$encodedUri")
                 }
             )
@@ -75,7 +76,10 @@ fun AppNavigation(
 
         composable("publicationDetail/{publicationPath}") { backStackEntry ->
             val publicationPathEncoded = backStackEntry.arguments?.getString("publicationPath") ?: return@composable
-            val publicationPath = Uri.decode(publicationPathEncoded)
+            val publicationPath = String(
+            Base64.decode(publicationPathEncoded, Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING),
+                    Charsets.UTF_8
+            )
 
             PublicationDetail(
                 shelfViewModel,

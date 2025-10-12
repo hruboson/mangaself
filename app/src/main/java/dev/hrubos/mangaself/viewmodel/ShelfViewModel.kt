@@ -1,8 +1,11 @@
 package dev.hrubos.mangaself.viewmodel
 
 import android.app.Application
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.hrubos.db.Database
@@ -61,7 +64,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     fun addPublication(profileId: String = "", uri: Uri){
         if(profileId == "") return
-        val rawUri = "${uri.scheme}://${uri.authority}${uri.path}" // needed because uri.path is not enough and uri.toString() encodes
+        val rawUri = uri.toString() // needed because uri.path is not enough and uri.toString() encodes
         viewModelScope.launch {
             try {
                 Log.d("ShelfViewModel", "Adding publication with path ${rawUri}")
@@ -112,9 +115,26 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     fun scanChapters(pub: Publication){
         Log.d("ShelfViewModel", "Scanning chapters for ${pub.systemPath}")
+        val folderUri = pub.systemPath.toUri()
+        val docFolder = DocumentFile.fromTreeUri(getApplication(), folderUri)
+        docFolder?.listFiles()?.forEach { file ->
+            if (file.isFile) {
+                Log.d("ShelfViewModel", "Found file: ${file.name}")
+            } else if (file.isDirectory) {
+                Log.d("ShelfViewModel", "Found folder: ${file.name}")
+            }
+        }
     }
 
     fun fetchMetadata(pub: Publication){
 
+    }
+
+    fun handlePickedFolder(uri: Uri){
+        getApplication<Application>().contentResolver.takePersistableUriPermission(
+            uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
+        addPublication(Configuration.selectedProfileId ?: "", uri)
     }
 }
