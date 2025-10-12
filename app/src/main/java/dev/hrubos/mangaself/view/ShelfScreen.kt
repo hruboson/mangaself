@@ -315,6 +315,12 @@ fun PublicationDetail(
     path: String,
     onBack: () -> Unit,
 ){
+    /**
+     *
+     * TODO rescan chapters
+     *
+     */
+
     val publication by shelfViewModel.publication.collectAsState()
     val isScanning by shelfViewModel.isScanning.collectAsState()
 

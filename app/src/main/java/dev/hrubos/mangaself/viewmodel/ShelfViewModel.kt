@@ -71,11 +71,14 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     fun addPublication(profileId: String = "", uri: Uri){
         if(profileId == "") return
-        val rawUri = uri.toString() // needed because uri.path is not enough and uri.toString() encodes
+        val rawUri = uri.toString()
+        val docFile = DocumentFile.fromTreeUri(getApplication(), uri)
+        val dirName = docFile?.name ?: "Unknown"
+
         viewModelScope.launch {
             try {
                 Log.d("ShelfViewModel", "Adding publication with path ${rawUri}")
-                val pub = db.addPublication(profileId, rawUri)
+                val pub = db.addPublication(profileId, rawUri, title = dirName)
                 scanChapters(pub)
             } catch (e: Exception) {
                 Log.e("ShelfViewModel", "Failed to add publication with path ${rawUri}", e)
@@ -133,11 +136,32 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 return@launch
             }
 
+            fun compareNumberLists(a: List<Int>, b: List<Int>): Int {
+                val minLength = minOf(a.size, b.size)
+                for (i in 0 until minLength) {
+                    if (a[i] != b[i]) return a[i] - b[i]
+                }
+                return a.size - b.size
+            }
+
             val sortedDirs = docFolder.listFiles()
                 .filter { it.isDirectory }
-                .sortedWith(compareBy {
-                    it.name?.let { name -> name.lowercase(Locale.ROOT) } ?: ""
-                })
+                .sortedWith { a, b ->
+                    val nameA = a.name?.lowercase(Locale.ROOT) ?: ""
+                    val nameB = b.name?.lowercase(Locale.ROOT) ?: ""
+
+                    // and now for a bit of regex
+                    // extract numbers
+                    val numA = Regex("(\\d+(?:\\.\\d+)*)").find(nameA)
+                        ?.value?.split('.')?.mapNotNull { it.toIntOrNull() } ?: emptyList()
+                    val numB = Regex("(\\d+(?:\\.\\d+)*)").find(nameB)
+                        ?.value?.split('.')?.mapNotNull { it.toIntOrNull() } ?: emptyList()
+
+                    // compare numeric parts
+                    val numCompare = compareNumberLists(numA, numB)
+                    if (numCompare != 0) numCompare
+                    else nameA.compareTo(nameB) // fallback to string comparison
+                }
 
             val chaptersList = mutableListOf<Chapter>()
             var position = 0
