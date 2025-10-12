@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -29,6 +30,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -312,8 +316,8 @@ fun PublicationDetail(
     onBack: () -> Unit,
 ){
     val publication by shelfViewModel.publication.collectAsState()
+    val isScanning by shelfViewModel.isScanning.collectAsState()
 
-    // Load the publication only once when this composable first appears
     LaunchedEffect(path) {
         shelfViewModel.loadPublication(path)
     }
@@ -334,6 +338,37 @@ fun PublicationDetail(
                 label = { Text("Description") }
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Chapters list
+            Text("Chapters", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f).fillMaxWidth()
+            ) {
+                val sortedChapters = pub.chapters.sortedBy { it.position }
+                items(sortedChapters.size) { index ->
+                    val chapter = sortedChapters[index]
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(text = chapter.title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            text = "Pages: ${chapter.pages}, Last read: ${chapter.pageLastRead}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
                     shelfViewModel.removePublication(profileId = Configuration.selectedProfileId)
@@ -349,6 +384,21 @@ fun PublicationDetail(
             }
         }
     } ?: Text("Loading...")
+
+    if (isScanning) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = Color.White)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Scanning chapters...", color = Color.White)
+            }
+        }
+    }
 }
 
 fun onSearchPlaceholder(str: String){

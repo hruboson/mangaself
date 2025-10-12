@@ -100,15 +100,17 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
-    override suspend fun addChapterToPublication(
+    override suspend fun addChaptersToPublication(
         pubUri: String,
-        title: String,
-        description: String,
-        pages: Int,
-        pageLastRead: Int,
-        read: Boolean
+        chapters: List<Chapter>
     ) {
-        TODO("Not yet implemented")
+        realm.write {
+            val publication = query<Publication>("systemPath == $0", pubUri).first().find()
+                ?: return@write
+
+            publication.chapters.clear() // clear existing
+            publication.chapters.addAll(chapters) // add new
+        }
     }
 
     override suspend fun getAllPublications(): List<Publication> {

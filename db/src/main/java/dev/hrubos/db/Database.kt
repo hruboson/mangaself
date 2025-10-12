@@ -30,7 +30,7 @@ class Database(
     suspend fun updateProfile(profile: Profile, name: String, readingMode: String) = repository.updateProfile(profile, name, readingMode)
 
     suspend fun addPublication(profileId: String, path: String, title: String = "", description: String = ""): Publication = repository.addPublication(profileId, path, title, description)
-    suspend fun addChapterToPublication(pubUri: String, title: String = "", description: String = "", pages: Int = 0, pageLastRead: Int = 0, read: Boolean = false) = repository.addChapterToPublication(pubUri, title, description, pages, pageLastRead, read)
+    suspend fun addChaptersToPublication(pubUri: String, chapters: List<Chapter>) = repository.addChaptersToPublication(pubUri, chapters)
     suspend fun getAllPublications() = repository.getAllPublications()
     suspend fun getAllPublicationsOfProfile(profileId: String) = repository.getAllPublicationsOfProfile(profileId)
     suspend fun getPublicationBySystemPath(systemPath: String) = repository.getPublicationBySystemPath(systemPath)

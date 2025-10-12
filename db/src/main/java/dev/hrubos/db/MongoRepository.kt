@@ -59,13 +59,9 @@ class MongoRepository(private val baseUrl: String) : Repository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun addChapterToPublication(
+    override suspend fun addChaptersToPublication(
         pubUri: String,
-        title: String,
-        description: String,
-        pages: Int,
-        pageLastRead: Int,
-        read: Boolean
+        chapters: List<Chapter>
     ) {
         TODO("Not yet implemented")
     }
