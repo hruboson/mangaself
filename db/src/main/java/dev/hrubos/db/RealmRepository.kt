@@ -1,6 +1,5 @@
 package dev.hrubos.db
 
-import android.net.Uri
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -68,33 +67,41 @@ class RealmRepository(application: android.app.Application) : Repository {
 
     override suspend fun addPublication(
         profileId: String,
-        path: Uri,
+        path: String,
         title: String,
         description: String
     ): Publication {
         return realm.writeBlocking {
             val profile = query<Profile>("id == $0", profileId).first().find()
+                ?: throw IllegalArgumentException("Profile not found")
 
-            if (profile != null) {
-                val newPublication = copyToRealm(
+            val existingPublication = query<Publication>("systemPath == $0", path).first().find()
+
+            val publicationToAdd = if (existingPublication != null) {
+                // reuse existing record
+                existingPublication
+            } else {
+                // create new record
+                copyToRealm(
                     Publication().apply {
-                        systemPath = path.toString() // store URI as string
+                        systemPath = path
                         this.title = title
                         this.description = description
                         favourite = false
                     }
                 )
-
-                profile.associatedPublications.add(newPublication)
-                newPublication // return added publication
-            } else {
-                throw IllegalArgumentException("Profile not found")
             }
+
+            if (!profile.associatedPublications.contains(publicationToAdd)) {
+                profile.associatedPublications.add(publicationToAdd)
+            }
+
+            publicationToAdd // return publication
         }
     }
 
     override suspend fun addChapterToPublication(
-        pubUri: Uri,
+        pubUri: String,
         title: String,
         description: String,
         pages: Int,
@@ -116,5 +123,21 @@ class RealmRepository(application: android.app.Application) : Repository {
     override suspend fun getPublicationBySystemPath(systemPath: String): Publication {
         return realm.query<Publication>("systemPath == $0", systemPath).first().find()
             ?: throw NoSuchElementException("Publication with systemPath '$systemPath' not found")
+    }
+
+    override suspend fun removePublication(systemPath: String) {
+        realm.write {
+            val publication = query<Publication>("systemPath == $0", systemPath).first().find()
+            if (publication != null) {
+                delete(publication)
+            }
+        }
+    }
+
+    override suspend fun clearPublications(){
+        realm.write {
+            val all = query<Publication>().find()
+            delete(all)
+        }
     }
 }

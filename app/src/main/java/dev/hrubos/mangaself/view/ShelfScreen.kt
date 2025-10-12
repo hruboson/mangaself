@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -30,6 +32,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -161,7 +164,7 @@ fun ShelfScreen(
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()
     val publications by shelfViewModel.publications.collectAsState(emptyList())
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(selectedProfile?.id) {
         selectedProfile?.let { profile ->
             shelfViewModel.loadPublicationsOfProfile(profile.id)
         }
@@ -299,6 +302,52 @@ fun PublicationGridItem(
             )
         }
     }
+}
+
+@Composable
+fun PublicationDetail(
+    shelfViewModel: ShelfViewModel,
+    path: String,
+    onBack: () -> Unit,
+){
+    val publication by shelfViewModel.publication.collectAsState()
+
+    // Load the publication only once when this composable first appears
+    LaunchedEffect(path) {
+        shelfViewModel.loadPublication(path)
+    }
+
+    publication?.let { pub ->
+        Column(modifier = Modifier.padding(16.dp)) {
+            TextField(
+                value = pub.title,
+                onValueChange = { shelfViewModel.editPublicationTitle(it) },
+                label = { Text("Title") }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = pub.description,
+                onValueChange = { shelfViewModel.editPublicationDescription(it) },
+                label = { Text("Description") }
+            )
+
+            Button(
+                onClick = {
+                    shelfViewModel.removePublication()
+                    onBack()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Remove from library")
+            }
+        }
+    } ?: Text("Loading...")
 }
 
 fun onSearchPlaceholder(str: String){

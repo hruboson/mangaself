@@ -10,6 +10,7 @@ import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
+import dev.hrubos.mangaself.view.PublicationDetail
 import dev.hrubos.mangaself.view.SettingsScreen
 import dev.hrubos.mangaself.view.ShelfWrapper
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
@@ -76,6 +77,11 @@ fun AppNavigation(
             val publicationPathEncoded = backStackEntry.arguments?.getString("publicationPath") ?: return@composable
             val publicationPath = Uri.decode(publicationPathEncoded)
 
+            PublicationDetail(
+                shelfViewModel,
+                publicationPath,
+                onBack = { navController.popBackStack() },
+            )
         }
 
 

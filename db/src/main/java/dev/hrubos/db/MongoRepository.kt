@@ -1,6 +1,5 @@
 package dev.hrubos.db
 
-import android.net.Uri
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -53,7 +52,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
 
     override suspend fun addPublication(
         profileId: String,
-        path: Uri,
+        path: String,
         title: String,
         description: String
     ): Publication {
@@ -61,7 +60,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
     }
 
     override suspend fun addChapterToPublication(
-        pubUri: Uri,
+        pubUri: String,
         title: String,
         description: String,
         pages: Int,
@@ -80,6 +79,14 @@ class MongoRepository(private val baseUrl: String) : Repository {
     }
 
     override suspend fun getPublicationBySystemPath(systemPath: String): Publication {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun removePublication(systemPath: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearPublications() {
         TODO("Not yet implemented")
     }
 }

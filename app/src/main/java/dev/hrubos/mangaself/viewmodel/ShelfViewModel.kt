@@ -24,6 +24,10 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     private val _publications = MutableStateFlow<List<Publication>>(emptyList())
     val publications: StateFlow<List<Publication>> = _publications.asStateFlow()
 
+    // live field publication --- better for editing, just don't forget to call loadPublication
+    private val _publication = MutableStateFlow<Publication?>(null)
+    val publication: StateFlow<Publication?> = _publication
+
     fun loadAllPublications() {
         viewModelScope.launch {
             try {
@@ -47,14 +51,64 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    fun loadPublication(systemPath: String){
+        Log.d("ShelfViewModel", "Loading publication with path $systemPath")
+        viewModelScope.launch {
+            val pub = db.getPublicationBySystemPath(systemPath)
+            _publication.value = pub
+        }
+    }
+
     fun addPublication(profileId: String = "", uri: Uri){
         if(profileId == "") return
+        val rawUri = "${uri.scheme}://${uri.authority}${uri.path}" // needed because uri.path is not enough and uri.toString() encodes
         viewModelScope.launch {
             try {
-                db.addPublication(profileId, uri)
+                Log.d("ShelfViewModel", "Adding publication with path ${rawUri}")
+                val pub = db.addPublication(profileId, rawUri)
+                scanChapters(pub)
             } catch (e: Exception) {
-                Log.e("ShelfViewModel", "Failed to add publication with path ${uri.toString()}", e)
+                Log.e("ShelfViewModel", "Failed to add publication with path ${rawUri}", e)
             }
         }
+    }
+
+    fun removePublication(){
+        val systemPath = _publication.value?.systemPath ?: return
+        viewModelScope.launch {
+            db.removePublication(systemPath)
+            _publication.value = null
+        }
+    }
+
+    fun clearPublications(onComplete: () -> Unit = {}){
+        viewModelScope.launch {
+            try {
+                db.clearPublications()
+                onComplete()
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Failed to delete all publications", e)
+            }
+        }
+    }
+
+    fun editPublicationTitle(title: String){
+
+    }
+
+    fun editPublicationDescription(description: String){
+
+    }
+
+    /*********************
+     * Scanner functions *
+     ********************/
+
+    fun scanChapters(pub: Publication){
+        Log.d("ShelfViewModel", "Scanning chapters for ${pub.systemPath}")
+    }
+
+    fun fetchMetadata(pub: Publication){
+
     }
 }
