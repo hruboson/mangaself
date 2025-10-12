@@ -56,7 +56,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
         path: Uri,
         title: String,
         description: String
-    ) {
+    ): Publication {
         TODO("Not yet implemented")
     }
 
@@ -76,6 +76,10 @@ class MongoRepository(private val baseUrl: String) : Repository {
     }
 
     override suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getPublicationBySystemPath(systemPath: String): Publication {
         TODO("Not yet implemented")
     }
 }

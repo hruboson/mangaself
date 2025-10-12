@@ -10,8 +10,9 @@ interface Repository {
     suspend fun clearProfiles()
     suspend fun updateProfile(profile: Profile, name: String, readingMode: String)
 
-    suspend fun addPublication(profileId: String, path: Uri, title: String, description: String)
+    suspend fun addPublication(profileId: String, path: Uri, title: String, description: String): Publication
     suspend fun addChapterToPublication(pubUri: Uri, title: String, description: String, pages: Int, pageLastRead: Int = 0, read: Boolean = false)
     suspend fun getAllPublications(): List<Publication>
     suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication>
+    suspend fun getPublicationBySystemPath(systemPath: String): Publication
 }

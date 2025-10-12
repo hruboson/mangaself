@@ -23,9 +23,8 @@ class RealmRepository(application: android.app.Application) : Repository {
     }
 
     override suspend fun getProfile(id: String): Profile  {
-        val profile = realm.query<Profile>("id == $0", id).first().find()
-
-        return profile ?: throw NoSuchElementException("Profile with id $id not found")
+        return realm.query<Profile>("id == $0", id).first().find()
+            ?: throw NoSuchElementException("Profile with id $id not found")
     }
 
     override suspend fun getAllProfiles(): List<Profile> {
@@ -72,8 +71,8 @@ class RealmRepository(application: android.app.Application) : Repository {
         path: Uri,
         title: String,
         description: String
-    ) {
-        realm.writeBlocking {
+    ): Publication {
+        return realm.writeBlocking {
             val profile = query<Profile>("id == $0", profileId).first().find()
 
             if (profile != null) {
@@ -87,6 +86,7 @@ class RealmRepository(application: android.app.Application) : Repository {
                 )
 
                 profile.associatedPublications.add(newPublication)
+                newPublication // return added publication
             } else {
                 throw IllegalArgumentException("Profile not found")
             }
@@ -111,5 +111,10 @@ class RealmRepository(application: android.app.Application) : Repository {
     override suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication> {
         val profile = realm.query<Profile>("id == $0", profileId).first().find()
         return profile?.associatedPublications?.toList() ?: emptyList()
+    }
+
+    override suspend fun getPublicationBySystemPath(systemPath: String): Publication {
+        return realm.query<Publication>("systemPath == $0", systemPath).first().find()
+            ?: throw NoSuchElementException("Publication with systemPath '$systemPath' not found")
     }
 }
