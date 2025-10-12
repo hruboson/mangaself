@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -224,8 +225,9 @@ fun PublicationGridItem(
     Box(
         modifier = Modifier
             .aspectRatio(0.75f)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
             .combinedClickable(
                 onClick = { onClick() },
                 onLongClick = { /* TODO batch select */ }
@@ -253,7 +255,7 @@ fun PublicationGridItem(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.9f),
+                            Color.Black.copy(alpha = 1f),
                             Color.Transparent,
                         )
                     )
@@ -279,7 +281,7 @@ fun PublicationGridItem(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            Color.Black.copy(alpha = 0.9f)
+                            Color.Black.copy(alpha = 1f)
                         )
                     )
                 ),
