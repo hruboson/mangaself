@@ -13,5 +13,6 @@ class Publication : RealmObject {
     var title: String = ""
     var description: String = ""
     var chapters: RealmList<Chapter> = realmListOf()
+    var lastChapterRead: Int = 0
     var favourite: Boolean = false
 }

@@ -183,7 +183,7 @@ fun ShelfScreen(
     Column(modifier = Modifier.fillMaxSize()) {
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 8.dp),
@@ -247,10 +247,12 @@ fun PublicationGridItem(
             .clickable { onClick() },
         contentAlignment = Alignment.BottomCenter
     ) {
+        val coverImage = if(publication.coverPath.isNotBlank()) publication.coverPath else R.drawable.cover_placeholder
+
         // Cover image
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(/*publication.coverPath ?:*/ R.drawable.cover_placeholder)
+                .data(coverImage)
                 .crossfade(true)
                 .build(),
             contentDescription = publication.title,
@@ -273,9 +275,8 @@ fun PublicationGridItem(
                     )
                 ),
             contentAlignment = Alignment.TopStart
-        ) {
-            Text(
-                text = "10/999", // Placeholder
+        ) { Text(
+                text = publication.lastChapterRead.toString() + "/" + publication.chapters.size.toString(),
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 10.sp,
@@ -372,7 +373,7 @@ fun PublicationDetail(
                         items(sortedChapters.size) { index ->
                             val chapter = sortedChapters[index]
 
-                            // Determine if chapter is fully read
+                            // determine if chapter is fully read
                             val isFullyRead = chapter.pageLastRead == chapter.pages
 
                             Row(

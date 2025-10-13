@@ -80,6 +80,14 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 Log.d("ShelfViewModel", "Adding publication with path ${rawUri}")
                 val pub = db.addPublication(profileId, rawUri, title = dirName)
                 scanChapters(pub)
+
+                val coverUri = findFirstImageInFirstChapter(uri)
+                if (coverUri != null) {
+                    db.editPublicationCover(pub.systemPath, coverUri.toString())
+                    Log.d("ShelfViewModel", "Set cover to $coverUri")
+                } else {
+                    Log.d("ShelfViewModel", "No cover image found for publication ${pub.systemPath}")
+                }
             } catch (e: Exception) {
                 Log.e("ShelfViewModel", "Failed to add publication with path ${rawUri}", e)
             }
@@ -207,6 +215,30 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     fun fetchMetadata(pub: Publication){
 
     }
+
+    private fun findFirstImageInFirstChapter(pubUri: Uri): Uri? {
+        val context = getApplication<Application>()
+        val root = DocumentFile.fromTreeUri(context, pubUri) ?: return null
+
+        // sort subfolders
+        val chapters = root.listFiles()
+            .filter { it.isDirectory }
+            .sortedBy { it.name ?: "" }
+
+        val firstChapter = chapters.firstOrNull() ?: return null
+
+        // find first image file
+        val firstImage = firstChapter.listFiles()
+            .filter { it.isFile }
+            .firstOrNull { it.name?.endsWith(".jpg", true) == true ||
+                    it.name?.endsWith(".jpeg", true) == true ||
+                    it.name?.endsWith(".png", true) == true ||
+                    it.name?.endsWith(".webp", true) == true }
+
+        return firstImage?.uri
+    }
+
+
 
     fun handlePickedFolder(uri: Uri){
         getApplication<Application>().contentResolver.takePersistableUriPermission(

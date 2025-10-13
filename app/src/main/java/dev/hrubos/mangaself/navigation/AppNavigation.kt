@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
@@ -84,7 +85,7 @@ fun AppNavigation(
             PublicationDetail(
                 shelfViewModel,
                 publicationPath,
-                onBack = { navController.popBackStack() },
+                onBack = { navController.navigate("shelf/${Configuration.selectedProfileId}") },
             )
         }
 
