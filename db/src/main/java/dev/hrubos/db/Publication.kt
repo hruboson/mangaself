@@ -9,6 +9,7 @@ class Publication : RealmObject {
     @PrimaryKey
     var systemPath = ""
 
+    var coverPath = ""
     var title: String = ""
     var description: String = ""
     var chapters: RealmList<Chapter> = realmListOf()
