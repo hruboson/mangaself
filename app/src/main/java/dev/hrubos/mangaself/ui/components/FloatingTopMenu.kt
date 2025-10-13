@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +45,7 @@ fun FloatingTopMenu(
     onSettings: () -> Unit = DEFAULT_FUNC,
     onInfo: () -> Unit = DEFAULT_FUNC,
     onSearch: (String) -> Unit = DEFAULT_FUNC_STRING,
+    title: String = ""
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -85,16 +87,17 @@ fun FloatingTopMenu(
                 }
 
                 // Center search bar
-                if(onSearch != DEFAULT_FUNC_STRING) {
+                if(onSearch != DEFAULT_FUNC_STRING || title != "") {
                     Row(
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val background = if(title != "") Color.Transparent else MaterialTheme.colorScheme.surface
                         Box(
                             modifier = Modifier
                                 .background(
-                                    color = MaterialTheme.colorScheme.surface,
+                                    color = background,
                                     shape = RoundedCornerShape(50)
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -103,22 +106,27 @@ fun FloatingTopMenu(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 4.dp)
-                                )
-                                BasicTextField(
-                                    value = searchQuery,
-                                    onValueChange = {
-                                        searchQuery = it
-                                        onSearch(it)
-                                    },
-                                    singleLine = true,
-                                    textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
-                                    modifier = Modifier.weight(1f),
-                                    cursorBrush = SolidColor(Color.White)
-                                )
+                                if(onSearch != DEFAULT_FUNC_STRING) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    )
+                                    BasicTextField(
+                                        value = searchQuery,
+                                        onValueChange = {
+                                            searchQuery = it
+                                            onSearch(it)
+                                        },
+                                        singleLine = true,
+                                        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
+                                        modifier = Modifier.weight(1f),
+                                        cursorBrush = SolidColor(Color.White)
+                                    )
+                                }
+                                if(title != ""){
+                                    Text(title, style = MaterialTheme.typography.titleLarge)
+                                }
                             }
                         }
                     }
