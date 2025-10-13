@@ -328,68 +328,87 @@ fun PublicationDetail(
         shelfViewModel.loadPublication(path)
     }
 
-    publication?.let { pub ->
-        Column(modifier = Modifier.padding(16.dp)) {
-            TextField(
-                value = pub.title,
-                onValueChange = { shelfViewModel.editPublicationTitle(it) },
-                label = { Text("Title") }
-            )
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            publication?.let { pub ->
+                FloatingTopMenu(
+                    onBack = onBack,
+                    title = pub.title
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Column(modifier = Modifier.padding(16.dp)) {
+                    TextField(
+                        value = pub.title,
+                        onValueChange = { shelfViewModel.editPublicationTitle(it) },
+                        label = { Text("Title") }
+                    )
 
-            TextField(
-                value = pub.description,
-                onValueChange = { shelfViewModel.editPublicationDescription(it) },
-                label = { Text("Description") }
-            )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    TextField(
+                        value = pub.description,
+                        onValueChange = { shelfViewModel.editPublicationDescription(it) },
+                        label = { Text("Description") }
+                    )
 
-            // Chapters list
-            Text("Chapters", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.weight(1f).fillMaxWidth()
-            ) {
-                val sortedChapters = pub.chapters.sortedBy { it.position }
-                items(sortedChapters.size) { index ->
-                    val chapter = sortedChapters[index]
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                    // Chapters list
+                    Text("Chapters", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth()
                     ) {
-                        Text(text = chapter.title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-                        Text(
-                            text = "Pages: ${chapter.pages}, Last read: ${chapter.pageLastRead}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+                        val sortedChapters = pub.chapters.sortedBy { it.position }
+                        items(sortedChapters.size) { index ->
+                            val chapter = sortedChapters[index]
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = chapter.title,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Pages: ${chapter.pages}, Last read: ${chapter.pageLastRead}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Gray
+                                )
+                            }
+
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                DividerDefaults.color
+                            )
+                        }
                     }
 
-                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            shelfViewModel.removePublication(profileId = Configuration.selectedProfileId)
+                            onBack()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Remove from library")
+                    }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    shelfViewModel.removePublication(profileId = Configuration.selectedProfileId)
-                    onBack()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Red,
-                    contentColor = Color.White
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Remove from library")
-            }
+            } ?: Text("Loading...")
         }
-    } ?: Text("Loading...")
+    }
 
     if (isScanning) {
         Box(
