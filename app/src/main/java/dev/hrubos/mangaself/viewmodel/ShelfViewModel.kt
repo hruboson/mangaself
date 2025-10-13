@@ -14,8 +14,11 @@ import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -34,6 +37,24 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     // live field publication --- better for editing, just don't forget to call loadPublication
     private val _publication = MutableStateFlow<Publication?>(null)
     val publication: StateFlow<Publication?> = _publication
+
+    private val _showFavourites = MutableStateFlow(false)
+    val showFavourites: StateFlow<Boolean> = _showFavourites
+
+    private val _searchQuery = MutableStateFlow("") // new: text filter
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    // Combined publications flow: favourites + search filter
+    val filteredPublications: StateFlow<List<Publication>> = combine(
+        _publications,
+        _showFavourites,
+        _searchQuery
+    ) { pubs, favouritesOnly, query ->
+        pubs.filter { pub ->
+            (!favouritesOnly || pub.favourite) &&
+                    (query.isBlank() || pub.title.contains(query, ignoreCase = true))
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _isScanning = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning
@@ -126,6 +147,27 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     fun editPublicationDescription(description: String){
 
     }
+
+    fun togglePublicationFavourite(pub: Publication){
+        viewModelScope.launch {
+            db.togglePublicationFavourite(pub.systemPath, !pub.favourite)
+
+            // update value immediately
+            val updatedPub = db.getPublicationBySystemPath(pub.systemPath)
+            // meh this might be super inefficient ---> look into this
+            _publications.value = _publications.value.map { if(it.systemPath == pub.systemPath) updatedPub else it }
+        }
+    }
+
+    fun toggleShowFavourites() {
+        _showFavourites.value = !_showFavourites.value
+    }
+
+    // Update search query
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
 
     /*********************
      * Scanner functions *

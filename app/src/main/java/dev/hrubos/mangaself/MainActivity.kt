@@ -1,7 +1,6 @@
 package dev.hrubos.mangaself
 
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,9 +29,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // TODO remove after testing
-        shelfViewModel.clearPublications {
+        /*shelfViewModel.clearPublications {
             Log.d("MainActivity", "Publications cleared successfully")
-        }
+        }*/
 
         // disable edge-to-edge on newer phones
         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)

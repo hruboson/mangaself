@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +44,7 @@ fun FloatingTopMenu(
     buttonSize: Dp = 48.dp,
     onBack: () -> Unit = DEFAULT_FUNC,
     onShowFavourite: () -> Unit = DEFAULT_FUNC,
+    showFavourites: Boolean = false,
     onSettings: () -> Unit = DEFAULT_FUNC,
     onInfo: () -> Unit = DEFAULT_FUNC,
     onSearch: (String) -> Unit = DEFAULT_FUNC_STRING,
@@ -81,7 +83,7 @@ fun FloatingTopMenu(
                     if(onShowFavourite != DEFAULT_FUNC){
                         MaterialIconButton(
                             onClick = onShowFavourite,
-                            icon = Icons.Default.StarBorder,
+                            icon = if(showFavourites) Icons.Default.Star else Icons.Default.StarBorder,
                             size = buttonSize
                         )
                     }

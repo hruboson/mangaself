@@ -1,7 +1,6 @@
 package dev.hrubos.mangaself.view
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -29,6 +29,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -37,6 +39,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,6 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import dev.hrubos.db.Publication
@@ -80,7 +84,8 @@ fun ShelfWrapper(
     profileViewModel: ProfileViewModel,
     onSettings: () -> Unit,
     onFolderSelected: (Uri) -> Unit,
-    onPublicationClick: (Publication) -> Unit
+    onPublicationClick: (Publication) -> Unit,
+    onToggleFavourite: (Publication) -> Unit,
 ){
     val listTabItem = listOf(
         TabItem("Library", "shelfscreen"),
@@ -88,6 +93,8 @@ fun ShelfWrapper(
     )
     var selectedTabItem by remember { mutableIntStateOf(1) }
     val pagerState = rememberPagerState(initialPage = 0) { listTabItem.size }
+    val showFavourites by shelfViewModel.showFavourites.collectAsState()
+
     LaunchedEffect(selectedTabItem) {
         pagerState.animateScrollToPage(selectedTabItem)
     }
@@ -101,9 +108,10 @@ fun ShelfWrapper(
         ) {
             // Shared top menu
             FloatingTopMenu(
-                onShowFavourite = { },
+                onShowFavourite = { shelfViewModel.toggleShowFavourites() },
+                showFavourites = showFavourites,
                 onSettings = onSettings,
-                onSearch = ::onSearchPlaceholder
+                onSearch = { query -> shelfViewModel.setSearchQuery(query) }
             )
 
             // Tabs and content below the top menu
@@ -147,7 +155,7 @@ fun ShelfWrapper(
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     when (page) {
-                        0 -> ShelfScreen(shelfViewModel, profileViewModel, onPublicationClick)
+                        0 -> ShelfScreen(shelfViewModel, profileViewModel, onPublicationClick, onToggleFavourite)
                         1 -> AddMangaScreen(shelfViewModel, profileViewModel, onFolderSelected)
                         else -> Text("Unknown Screen")
                     }
@@ -168,10 +176,13 @@ fun ShelfWrapper(
 fun ShelfScreen(
     shelfViewModel: ShelfViewModel,
     profileViewModel: ProfileViewModel,
-    onPublicationClick: (Publication) -> Unit
+    onPublicationClick: (Publication) -> Unit,
+    onToggleFavourite: (Publication) -> Unit,
 ) {
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()
-    val publications by shelfViewModel.publications.collectAsState(emptyList())
+    val publications by shelfViewModel.filteredPublications.collectAsState(emptyList())
+    val showFavourites by shelfViewModel.showFavourites.collectAsState()
+    val searchQuery by shelfViewModel.searchQuery.collectAsState("")
 
     LaunchedEffect(selectedProfile?.id) {
         selectedProfile?.let { profile ->
@@ -194,7 +205,8 @@ fun ShelfScreen(
             items(publications, key = { it.systemPath }) { publication ->
                 PublicationGridItem(
                     publication = publication,
-                    onClick = { onPublicationClick(publication) }
+                    onClick = { onPublicationClick(publication) },
+                    onToggleFavourite = { onToggleFavourite(publication) }
                 )
             }
         }
@@ -232,7 +244,8 @@ fun AddMangaScreen(
 @Composable
 fun PublicationGridItem(
     publication: Publication,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onToggleFavourite: (Publication) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -259,6 +272,24 @@ fun PublicationGridItem(
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
+
+        // Top-right: favourite icon
+        IconButton(
+            onClick = {
+                onToggleFavourite(publication)
+            },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp)
+                .size(28.dp)
+                .zIndex(1f) // bring above gradients
+        ) {
+            Icon(
+                imageVector = if (publication.favourite) Icons.Default.Star else Icons.Default.StarBorder,
+                contentDescription = if (publication.favourite) "Unfavourite" else "Favourite",
+            )
+        }
+
 
         // Top-left: chapters info
         Box(
@@ -319,7 +350,7 @@ fun PublicationDetail(
     shelfViewModel: ShelfViewModel,
     path: String,
     onBack: () -> Unit,
-){
+) {
     /**
      *
      * TODO rescan chapters
@@ -405,7 +436,7 @@ fun PublicationDetail(
                                         contentDescription = "Chapter fully read",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
-                                }else{
+                                } else {
                                     Icon(
                                         imageVector = Icons.Default.VisibilityOff,
                                         contentDescription = "Read chapter",
@@ -456,8 +487,4 @@ fun PublicationDetail(
             }
         }
     }
-}
-
-fun onSearchPlaceholder(str: String){
-    Log.v("Search:", str)
 }

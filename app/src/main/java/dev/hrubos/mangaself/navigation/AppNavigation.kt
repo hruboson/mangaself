@@ -71,7 +71,10 @@ fun AppNavigation(
                 onPublicationClick = { publication ->
                     val encodedUri = Base64.encodeToString(publication.systemPath.toByteArray(), Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
                     navController.navigate("publicationDetail/$encodedUri")
-                }
+                },
+                onToggleFavourite = { publication ->
+                   shelfViewModel.togglePublicationFavourite(publication)
+                },
             )
         }
 
