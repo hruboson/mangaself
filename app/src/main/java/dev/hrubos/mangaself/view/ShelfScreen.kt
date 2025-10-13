@@ -221,7 +221,7 @@ fun AddMangaScreen(
             onClick = {folderPickerLauncher.launch(null) }
         ) {
             Text(
-                text = "Browse local files",
+                text = "Browse local folders",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
