@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.hrubos.mangaself.model.DEFAULT_FUNC
@@ -125,8 +126,10 @@ fun FloatingTopMenu(
                                     )
                                 }
                                 if(title != ""){
-                                    val displayTitle = if (title.length >= 20) title.take(20) + "..." else title
-                                    Text(displayTitle, style = MaterialTheme.typography.titleLarge)
+                                    Text(title,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                 }
                             }
                         }
