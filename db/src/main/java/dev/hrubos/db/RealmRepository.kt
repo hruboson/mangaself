@@ -113,6 +113,15 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
+    override suspend fun editPublicationCover(pubUri: String, coverUri: String) {
+        realm.write {
+            val publication = query<Publication>("systemPath == $0", pubUri).first().find()
+                ?: return@write
+
+            publication.coverPath = coverUri
+        }
+    }
+
     override suspend fun getAllPublications(): List<Publication> {
         return realm.query<Publication>().find().toList()
     }

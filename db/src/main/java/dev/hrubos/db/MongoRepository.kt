@@ -66,6 +66,10 @@ class MongoRepository(private val baseUrl: String) : Repository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun editPublicationCover(pubUri: String, coverUri: String) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getAllPublications(): List<Publication> {
         TODO("Not yet implemented")
     }
