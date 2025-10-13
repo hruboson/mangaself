@@ -125,7 +125,8 @@ fun FloatingTopMenu(
                                     )
                                 }
                                 if(title != ""){
-                                    Text(title, style = MaterialTheme.typography.titleLarge)
+                                    val displayTitle = if (title.length >= 20) title.take(20) + "..." else title
+                                    Text(displayTitle, style = MaterialTheme.typography.titleLarge)
                                 }
                             }
                         }
