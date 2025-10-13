@@ -122,6 +122,18 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
+    override suspend fun togglePublicationFavourite(
+        pubUri: String,
+        toggleTo: Boolean
+    ) {
+        realm.write {
+            val publication = query<Publication>("systemPath == $0", pubUri).first().find()
+                ?: return@write
+
+            publication.favourite = toggleTo
+        }
+    }
+
     override suspend fun getAllPublications(): List<Publication> {
         return realm.query<Publication>().find().toList()
     }

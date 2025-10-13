@@ -32,6 +32,7 @@ class Database(
     suspend fun addPublication(profileId: String, path: String, title: String = "", description: String = ""): Publication = repository.addPublication(profileId, path, title, description)
     suspend fun addChaptersToPublication(pubUri: String, chapters: List<Chapter>) = repository.addChaptersToPublication(pubUri, chapters)
     suspend fun editPublicationCover(pubUri: String, coverUri: String) = repository.editPublicationCover(pubUri, coverUri)
+    suspend fun togglePublicationFavourite(pubUri: String, toggleTo: Boolean) = repository.togglePublicationFavourite(pubUri, toggleTo)
     suspend fun getAllPublications() = repository.getAllPublications()
     suspend fun getAllPublicationsOfProfile(profileId: String) = repository.getAllPublicationsOfProfile(profileId)
     suspend fun getPublicationBySystemPath(systemPath: String) = repository.getPublicationBySystemPath(systemPath)
