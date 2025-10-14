@@ -88,6 +88,13 @@ fun AppNavigation(
                 onToggleFavourite = { publication ->
                    shelfViewModel.togglePublicationFavourite(publication)
                 },
+                onContinueReading = { publication, _ ->
+                    // find chapter to continue
+                    val sortedChapters = publication.chapters.sortedBy { it.position }
+                    val chapterToContinue = sortedChapters.firstOrNull { it.pageLastRead < it.pages }
+                        ?: sortedChapters.lastOrNull()
+                    chapterToContinue?.let { navigateToReader(navController, publication, it) }
+                }
             )
         }
 

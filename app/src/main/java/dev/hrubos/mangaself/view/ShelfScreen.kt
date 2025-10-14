@@ -30,6 +30,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Visibility
@@ -91,6 +92,7 @@ fun ShelfWrapper(
     onFolderSelected: (Uri) -> Unit,
     onPublicationClick: (Publication) -> Unit,
     onToggleFavourite: (Publication) -> Unit,
+    onContinueReading: (Publication, Chapter) -> Unit
 ){
     val listTabItem = listOf(
         TabItem("Library", "shelfscreen"),
@@ -160,7 +162,7 @@ fun ShelfWrapper(
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     when (page) {
-                        0 -> ShelfScreen(shelfViewModel, profileViewModel, onPublicationClick, onToggleFavourite)
+                        0 -> ShelfScreen(shelfViewModel, profileViewModel, onPublicationClick, onToggleFavourite, onContinueReading)
                         1 -> AddMangaScreen(shelfViewModel, profileViewModel, onFolderSelected)
                         else -> Text("Unknown Screen")
                     }
@@ -183,6 +185,7 @@ fun ShelfScreen(
     profileViewModel: ProfileViewModel,
     onPublicationClick: (Publication) -> Unit,
     onToggleFavourite: (Publication) -> Unit,
+    onContinueReading: (Publication, Chapter) -> Unit
 ) {
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()
     val publications by shelfViewModel.filteredPublications.collectAsState(emptyList())
@@ -211,7 +214,8 @@ fun ShelfScreen(
                 PublicationGridItem(
                     publication = publication,
                     onClick = { onPublicationClick(publication) },
-                    onToggleFavourite = { onToggleFavourite(publication) }
+                    onToggleFavourite = { onToggleFavourite(publication) },
+                    onContinueReading = onContinueReading
                 )
             }
         }
@@ -251,6 +255,7 @@ fun PublicationGridItem(
     publication: Publication,
     onClick: () -> Unit,
     onToggleFavourite: (Publication) -> Unit,
+    onContinueReading: (Publication, Chapter) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -320,33 +325,55 @@ fun PublicationGridItem(
             )
         }
 
-        // Bottom: title
-        Box(
+        // Bottom row: title on left, continue button on right
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .fillMaxHeight(0.2f)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            Color.Black.copy(alpha = 1f)
+                            Color.Black.copy(alpha = 0.8f)
                         )
                     )
-                ),
-            contentAlignment = Alignment.BottomStart
+                )
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = if (publication.title.isNotBlank()) publication.title else "Untitled",
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .fillMaxWidth(),
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(0.8f)
             )
+
+            Box(
+                modifier = Modifier
+                    .weight(0.2f)
+                    .aspectRatio(1f) // keep it square
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable {
+                        val sortedChapters = publication.chapters.sortedBy { it.position }
+                        val chapterToContinue = sortedChapters.firstOrNull { it.pageLastRead < it.pages }
+                            ?: sortedChapters.lastOrNull()
+                        chapterToContinue?.let { onContinueReading(publication, it) }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                    contentDescription = "Continue reading",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
         }
+
     }
 }
 
