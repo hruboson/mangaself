@@ -12,6 +12,7 @@ import dev.hrubos.db.Chapter
 import dev.hrubos.db.Database
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
+import dev.hrubos.mangaself.model.filterAndSortChapters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 
 class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
@@ -195,23 +195,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             }
 
             val sortedDirs = docFolder.listFiles()
-                .filter { it.isDirectory }
-                .sortedWith { a, b ->
-                    val nameA = a.name?.lowercase(Locale.ROOT) ?: ""
-                    val nameB = b.name?.lowercase(Locale.ROOT) ?: ""
-
-                    // and now for a bit of regex
-                    // extract numbers
-                    val numA = Regex("(\\d+(?:\\.\\d+)*)").find(nameA)
-                        ?.value?.split('.')?.mapNotNull { it.toIntOrNull() } ?: emptyList()
-                    val numB = Regex("(\\d+(?:\\.\\d+)*)").find(nameB)
-                        ?.value?.split('.')?.mapNotNull { it.toIntOrNull() } ?: emptyList()
-
-                    // compare numeric parts
-                    val numCompare = compareNumberLists(numA, numB)
-                    if (numCompare != 0) numCompare
-                    else nameA.compareTo(nameB) // fallback to string comparison
-                }
+                .toList().filterAndSortChapters()
 
             val chaptersList = mutableListOf<Chapter>()
             var position = 0
@@ -264,8 +248,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
         // sort subfolders
         val chapters = root.listFiles()
-            .filter { it.isDirectory }
-            .sortedBy { it.name ?: "" }
+            .toList().filterAndSortChapters()
 
         val firstChapter = chapters.firstOrNull() ?: return null
 
