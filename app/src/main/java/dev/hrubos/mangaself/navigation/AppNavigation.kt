@@ -1,16 +1,29 @@
 package dev.hrubos.mangaself.navigation
 
 import android.util.Base64
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.hrubos.db.Chapter
+import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
 import dev.hrubos.mangaself.view.PublicationDetail
+import dev.hrubos.mangaself.view.ReaderScreen
 import dev.hrubos.mangaself.view.SettingsScreen
 import dev.hrubos.mangaself.view.ShelfWrapper
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
@@ -89,7 +102,57 @@ fun AppNavigation(
                 shelfViewModel,
                 publicationPath,
                 onBack = { navController.navigate("shelf/${Configuration.selectedProfileId}") },
+                onChapterClick = { pub, chapter ->
+                    navigateToReader(navController, pub, chapter)
+                }
             )
+        }
+
+        composable(
+            route = "reader/{publicationPath}/{chapterPath}"
+        ) { backStackEntry ->
+            val pubEncoded = backStackEntry.arguments?.getString("publicationPath") ?: return@composable
+            val chapterEncoded = backStackEntry.arguments?.getString("chapterPath") ?: return@composable
+
+            val pubPath = String(
+                Base64.decode(pubEncoded, Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING),
+                Charsets.UTF_8
+            )
+            val chapterPath = String(
+                Base64.decode(chapterEncoded, Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING),
+                Charsets.UTF_8
+            )
+
+            var publication by remember { mutableStateOf<Publication?>(null) }
+            var chapter by remember { mutableStateOf<Chapter?>(null) }
+
+            LaunchedEffect(pubPath) {
+                val pub = shelfViewModel.getPublicationBySystemPath(pubPath)
+                publication = pub
+                chapter = pub.chapters.firstOrNull { it.systemPath == chapterPath }
+            }
+
+            if (publication != null && chapter != null) {
+                val pub = publication!!   // local non-null copy
+                val chap = chapter!!
+
+                ReaderScreen(
+                    profileViewModel = profileViewModel,
+                    shelfViewModel = shelfViewModel,
+                    publication = publication!!,
+                    chapter = chapter!!,
+                    onBack = { navController.popBackStack() },
+                    onPageChanged = { pageNum -> },
+                    onChapterChange = { chapter ->
+                        navigateToReader(navController, pub, chap)
+                    }
+                )
+            } else {
+                // loading UI while DB fetch completes
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Loading chapter...")
+                }
+            }
         }
 
 
@@ -113,4 +176,14 @@ fun AppNavigation(
         }
 
     }
+}
+
+
+fun navigateToReader(navController: NavController, publication: Publication, chapter: Chapter) {
+    val pubEncoded = Base64.encodeToString(publication.systemPath.toByteArray(Charsets.UTF_8),
+        Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
+    val chapterEncoded = Base64.encodeToString(chapter.systemPath.toByteArray(Charsets.UTF_8),
+        Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
+
+    navController.navigate("reader/$pubEncoded/$chapterEncoded")
 }

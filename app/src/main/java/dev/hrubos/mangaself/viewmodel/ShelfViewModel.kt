@@ -90,6 +90,11 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    suspend fun getPublicationBySystemPath(systemPath: String): Publication{
+        Log.d("ShelfViewModel", "Loading publication with path $systemPath")
+        return db.getPublicationBySystemPath(systemPath)
+    }
+
     fun addPublication(profileId: String = "", uri: Uri){
         if(profileId == "") return
         val rawUri = uri.toString()

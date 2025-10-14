@@ -105,6 +105,13 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
+    fun getCurrentReadingMode(): ReadingMode {
+        val profile = _selectedProfile.value
+        return profile?.readingMode?.let { text ->
+            ReadingMode.values().firstOrNull { it.text == text }
+        } ?: ReadingMode.LEFTTORIGHT
+    }
+
     fun addProfile(name: String, onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             try {
@@ -143,6 +150,9 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 db.updateProfile(current, newName, newReadingMode)
+
+                current.name = newName
+                current.readingMode = newReadingMode
                 _selectedProfile.value = current
                 Log.d("ProfileViewModel", "Profile updated: $newName, $newReadingMode")
             } catch (e: Exception) {

@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import dev.hrubos.db.Chapter
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.R
 import dev.hrubos.mangaself.model.Configuration
@@ -350,6 +351,7 @@ fun PublicationDetail(
     shelfViewModel: ShelfViewModel,
     path: String,
     onBack: () -> Unit,
+    onChapterClick: (Publication, Chapter) -> Unit,
 ) {
     /**
      *
@@ -410,7 +412,7 @@ fun PublicationDetail(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { /* Navigate TODO ... onChapterClick(chapter) */ }
+                                    .clickable { onChapterClick(pub, chapter) }
                                     .padding(vertical = 8.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
