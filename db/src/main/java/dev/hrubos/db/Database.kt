@@ -39,4 +39,6 @@ class Database(
     suspend fun removePublication(systemPath: String) = repository.removePublication(systemPath)
     suspend fun removePublicationFromProfile(profileId: String, systemPath: String) = repository.removePublicationFromProfile(profileId, systemPath)
     suspend fun clearPublications() = repository.clearPublications()
+
+    suspend fun updateChapter(pub: Publication, chapter: Chapter, lastRead: Int) = repository.updateChapter(pub, chapter, lastRead)
 }

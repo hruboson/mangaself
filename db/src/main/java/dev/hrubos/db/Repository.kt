@@ -18,4 +18,6 @@ interface Repository {
     suspend fun removePublication(systemPath: String)
     suspend fun removePublicationFromProfile(profileId: String, systemPath: String)
     suspend fun clearPublications()
+
+    suspend fun updateChapter(pub: Publication, chapter: Chapter, lastRead: Int)
 }

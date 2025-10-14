@@ -104,4 +104,12 @@ class MongoRepository(private val baseUrl: String) : Repository {
     override suspend fun clearPublications() {
         TODO("Not yet implemented")
     }
+
+    override suspend fun updateChapter(
+        pub: Publication,
+        chapter: Chapter,
+        lastRead: Int
+    ) {
+        TODO("Not yet implemented")
+    }
 }

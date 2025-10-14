@@ -181,4 +181,23 @@ class RealmRepository(application: android.app.Application) : Repository {
             delete(all)
         }
     }
+
+    override suspend fun updateChapter(
+        pub: Publication,
+        chapter: Chapter,
+        lastRead: Int
+    ) {
+        realm.write {
+            val managedPub = query<Publication>("systemPath == $0", pub.systemPath)
+                .first().find() ?: return@write
+
+            val managedChapter = managedPub.chapters.firstOrNull { it.title == chapter.title }
+                ?: return@write
+
+            managedChapter.pageLastRead = lastRead
+            managedChapter.read = lastRead >= managedChapter.pages
+
+            managedPub.lastChapterRead = managedChapter.position + 1
+        }
+    }
 }
