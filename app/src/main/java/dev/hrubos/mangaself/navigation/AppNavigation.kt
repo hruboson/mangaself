@@ -141,10 +141,10 @@ fun AppNavigation(
                     shelfViewModel = shelfViewModel,
                     publication = publication!!,
                     chapter = chapter!!,
-                    onBack = { navController.popBackStack() },
+                    onBack = { navigateToPublication(navController, pub) },
                     onPageChanged = { pageNum -> },
-                    onChapterChange = { chapter ->
-                        navigateToReader(navController, pub, chap)
+                    onChapterChange = { newChapter ->
+                        navigateToReader(navController, pub, newChapter)
                     }
                 )
             } else {
@@ -186,4 +186,16 @@ fun navigateToReader(navController: NavController, publication: Publication, cha
         Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
 
     navController.navigate("reader/$pubEncoded/$chapterEncoded")
+}
+
+
+fun navigateToPublication(navController: NavController, publication: Publication) {
+    val pubEncoded = Base64.encodeToString(
+        publication.systemPath.toByteArray(Charsets.UTF_8),
+        Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING
+    )
+    navController.navigate("publicationDetail/$pubEncoded") {
+        popUpTo("shelf/${Configuration.selectedProfileId}") { inclusive = false }
+        launchSingleTop = true
+    }
 }
