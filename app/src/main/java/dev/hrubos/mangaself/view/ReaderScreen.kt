@@ -58,7 +58,7 @@ fun ReaderScreen(
     initialPage: Int = 0,
     onBack: () -> Unit,
     onPageChanged: (Int) -> Unit = {},
-    onChapterChange: (Chapter) -> Unit // callback when changing chapter externally
+    onChapterChange: (Chapter) -> Unit
 ) {
     var chapter by remember { mutableStateOf(chapter) }
 
@@ -147,7 +147,7 @@ fun ReaderScreen(
                     }
                 }
 
-                // Floating message
+                // floating message
                 showMessage?.let { msg ->
                     Box(
                         modifier = Modifier

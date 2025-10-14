@@ -41,10 +41,10 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     private val _showFavourites = MutableStateFlow(false)
     val showFavourites: StateFlow<Boolean> = _showFavourites
 
-    private val _searchQuery = MutableStateFlow("") // new: text filter
+    private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    // Combined publications flow: favourites + search filter
+    // combined publications flow: favourites + search filter
     val filteredPublications: StateFlow<List<Publication>> = combine(
         _publications,
         _showFavourites,
