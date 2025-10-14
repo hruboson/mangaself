@@ -67,7 +67,6 @@ import coil.request.ImageRequest
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.R
-import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
@@ -459,16 +458,20 @@ fun PublicationDetail(
 
                     Button(
                         onClick = {
-                            shelfViewModel.removePublication(profileId = Configuration.selectedProfileId)
-                            onBack()
+                            val sortedChapters = pub.chapters.sortedBy { it.position }
+
+                            // find first chapter that is NOT fully read
+                            val chapterToContinue = sortedChapters.firstOrNull { chapter ->
+                                chapter.pageLastRead < chapter.pages
+                            } ?: sortedChapters.lastOrNull() // fallback: last chapter
+
+                            chapterToContinue?.let { chapter ->
+                                onChapterClick(pub, chapter)
+                            }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red,
-                            contentColor = Color.White
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Remove from library")
+                        Text("Continue reading")
                     }
                 }
             } ?: Text("Loading...")
