@@ -25,10 +25,7 @@ fun compareNumberLists(a: List<Int>, b: List<Int>): Int {
     return a.size - b.size
 }
 
-/**
- * regex to extract numeric parts from folder names, like "ch1.5" -> [1, 5]
- */
-private val numberRegex = Regex("(\\d+(?:\\.\\d+)*)")
+private val numberRegex = Regex("\\d+")
 
 /**
  * a comparator for DocumentFile directories that sorts by numeric parts first, then by lexicographic order.
@@ -37,10 +34,8 @@ val chapterDirectoryComparator = Comparator<DocumentFile> { a, b ->
     val nameA = a.name?.lowercase(Locale.ROOT) ?: ""
     val nameB = b.name?.lowercase(Locale.ROOT) ?: ""
 
-    val numA = numberRegex.find(nameA)
-        ?.value?.split('.')?.mapNotNull { it.toIntOrNull() } ?: emptyList()
-    val numB = numberRegex.find(nameB)
-        ?.value?.split('.')?.mapNotNull { it.toIntOrNull() } ?: emptyList()
+    val numA = numberRegex.findAll(nameA).map { it.value.toInt() }.toList()
+    val numB = numberRegex.findAll(nameB).map { it.value.toInt() }.toList()
 
     val numCompare = compareNumberLists(numA, numB)
     if (numCompare != 0) numCompare else nameA.compareTo(nameB)
@@ -52,3 +47,6 @@ val chapterDirectoryComparator = Comparator<DocumentFile> { a, b ->
 fun List<DocumentFile>.filterAndSortChapters(): List<DocumentFile> =
     this.filter { it.isDirectory && it.name?.contains(Regex("\\d")) == true }
         .sortedWith(chapterDirectoryComparator)
+
+fun String.padNumbers(): String =
+    replace(Regex("\\d+")) { it.value.padStart(10, '0') }

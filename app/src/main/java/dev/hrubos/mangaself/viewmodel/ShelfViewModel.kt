@@ -13,6 +13,7 @@ import dev.hrubos.db.Database
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.model.filterAndSortChapters
+import dev.hrubos.mangaself.model.padNumbers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -178,7 +179,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
      * Scanner functions *
      ********************/
 
-    fun scanChapters(pub: Publication){
+    private fun scanChapters(pub: Publication){
         viewModelScope.launch(Dispatchers.IO){ // Dispatcher.IO moves it off of the main thread
             _isScanning.value = true
             Log.d("ChapterScanner", "Scanning chapters for ${pub.systemPath}")
@@ -244,7 +245,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun fetchMetadata(pub: Publication){
+    private fun fetchMetadata(pub: Publication){
 
     }
 
@@ -260,18 +261,14 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
         // find first image file
         val firstImage = firstChapter.listFiles()
-            .filter { it.isFile }
-            .firstOrNull { it.name?.endsWith(".jpg", true) == true ||
-                    it.name?.endsWith(".jpeg", true) == true ||
-                    it.name?.endsWith(".png", true) == true ||
-                    it.name?.endsWith(".webp", true) == true }
+            .filter { it.isFile && it.name?.matches(Regex(".*\\.(jpg|jpeg|png|webp)$", RegexOption.IGNORE_CASE)) == true }
+            .sortedBy { it.name?.padNumbers() }
+            .firstOrNull()
 
         return firstImage?.uri
     }
 
-
-
-    fun handlePickedFolder(uri: Uri){
+    public fun handlePickedFolder(uri: Uri){
         getApplication<Application>().contentResolver.takePersistableUriPermission(
             uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
