@@ -151,9 +151,8 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
             try {
                 db.updateProfile(current, newName, newReadingMode)
 
-                current.name = newName
-                current.readingMode = newReadingMode
-                _selectedProfile.value = current
+                val updated = db.getProfile(current.id)
+                _selectedProfile.value = updated
                 Log.d("ProfileViewModel", "Profile updated: $newName, $newReadingMode")
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to update profile", e)
