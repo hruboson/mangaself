@@ -86,7 +86,13 @@ fun ReaderScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("${publication.title} — ${chapter.title}") },
+                title = {
+                    Text(
+                        text = "${publication.title} — ${chapter.title}",
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1
+                    )
+                },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ChevronLeft, null) } },
                 actions = {
                     ModeSelectorDropdown(
