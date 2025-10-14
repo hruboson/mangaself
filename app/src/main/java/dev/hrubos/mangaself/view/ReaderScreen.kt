@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -72,16 +73,30 @@ fun ReaderScreen(
     }
 
     var readingMode by rememberSaveable { mutableStateOf(profileViewModel.getCurrentReadingMode()) }
+
+    // state for LEFTTORIGHT, RIGHTTOLEFT
     val pagerState = rememberPagerState(
-        initialPage = initialPage,
+        initialPage = if (chapter.pageLastRead > 0) chapter.pageLastRead - 1 else 0,
         pageCount = { pageFiles.size }
     )
-
-    var showMessage by remember { mutableStateOf<String?>(null) }
-
     LaunchedEffect(pagerState.currentPage) {
         onPageChanged(pagerState.currentPage)
+
+        shelfViewModel.updateChapterLastRead(publication, chapter, pagerState.currentPage + 1)
     }
+
+    // state for LONGSTRIP
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = if (chapter.pageLastRead > 0) chapter.pageLastRead - 1 else 0
+    )
+    LaunchedEffect(listState.firstVisibleItemIndex) {
+        val currentPage = listState.firstVisibleItemIndex
+        if (currentPage >= 0) {
+            shelfViewModel.updateChapterLastRead(publication, chapter, currentPage + 1)
+        }
+    }
+
+    var showMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -183,6 +198,7 @@ fun ReaderScreen(
             when (readingMode) {
                 ReadingMode.LONGSTRIP -> {
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding)
