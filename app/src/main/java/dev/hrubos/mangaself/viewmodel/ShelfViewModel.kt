@@ -141,7 +141,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 db.clearPublications()
                 onComplete()
             } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Failed to delete all publications", e)
+                Log.e("ShelfViewModel", "Failed to delete all publications", e)
             }
         }
     }
@@ -174,6 +174,18 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         _searchQuery.value = query
     }
 
+    fun updateChapterLastRead(pub: Publication, chapter: Chapter, lastPage: Int){
+        viewModelScope.launch {
+            try {
+                db.updateChapter(pub, chapter, lastPage)
+
+                val updatedPub = db.getPublicationBySystemPath(pub.systemPath)
+                _publication.value = updatedPub
+            } catch (e: Exception) {
+                Log.e("ShelfViewModel", "Failed to update chapter ${pub.title}/${chapter.title}", e)
+            }
+        }
+    }
 
     /*********************
      * Scanner functions *

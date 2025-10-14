@@ -493,7 +493,11 @@ fun PublicationDetail(
                                     else
                                         Icons.Default.VisibilityOff,
                                     contentDescription = if (isFullyRead) "Chapter fully read" else "Unread chapter",
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.clickable {
+                                        val newPage = if (isFullyRead) 0 else chapter.pages
+                                        shelfViewModel.updateChapterLastRead(pub, chapter, newPage)
+                                    }
                                 )
                             }
 
