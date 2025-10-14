@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,12 +45,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,6 +71,7 @@ import coil.request.ImageRequest
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.R
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
@@ -361,6 +366,8 @@ fun PublicationDetail(
     val publication by shelfViewModel.publication.collectAsState()
     val isScanning by shelfViewModel.isScanning.collectAsState()
 
+    var showRemoveDialog by remember { mutableStateOf(false) } // confirm dialog state
+
     LaunchedEffect(path) {
         shelfViewModel.loadPublication(path)
     }
@@ -375,24 +382,76 @@ fun PublicationDetail(
                     title = pub.title
                 )
 
-                Column(modifier = Modifier.padding(16.dp)) {
-                    TextField(
-                        value = pub.title,
-                        onValueChange = { shelfViewModel.editPublicationTitle(it) },
-                        label = { Text("Title") }
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(if (pub.coverPath.isNotBlank()) pub.coverPath else R.drawable.cover_placeholder)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = pub.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .width(120.dp)
+                                .aspectRatio(0.75f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outline,
+                                    RoundedCornerShape(8.dp)
+                                )
+                        )
 
-                    TextField(
-                        value = pub.description,
-                        onValueChange = { shelfViewModel.editPublicationDescription(it) },
-                        label = { Text("Description") }
-                    )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .align(Alignment.Top),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            TextField(
+                                value = pub.title,
+                                onValueChange = { shelfViewModel.editPublicationTitle(it) },
+                                label = { Text("Title") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                            TextField(
+                                value = pub.description,
+                                onValueChange = { shelfViewModel.editPublicationDescription(it) },
+                                label = { Text("Description") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
 
-                    // Chapters list
+                            Button(
+                                onClick = { showRemoveDialog = true },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Red,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(36.dp)
+                            ) {
+                                Text(
+                                    "Remove from library",
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
+                    }
+
                     Text("Chapters", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -404,8 +463,6 @@ fun PublicationDetail(
                         val sortedChapters = pub.chapters.sortedBy { it.position }
                         items(sortedChapters.size) { index ->
                             val chapter = sortedChapters[index]
-
-                            // determine if chapter is fully read
                             val isFullyRead = chapter.pageLastRead == chapter.pages
 
                             Row(
@@ -416,8 +473,7 @@ fun PublicationDetail(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
-                                    modifier = Modifier
-                                        .weight(1f)
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
                                         text = chapter.title,
@@ -431,19 +487,14 @@ fun PublicationDetail(
                                     )
                                 }
 
-                                if (isFullyRead) {
-                                    Icon(
-                                        imageVector = Icons.Default.Visibility,
-                                        contentDescription = "Chapter fully read",
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Default.VisibilityOff,
-                                        contentDescription = "Read chapter",
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
+                                Icon(
+                                    imageVector = if (isFullyRead)
+                                        Icons.Default.Visibility
+                                    else
+                                        Icons.Default.VisibilityOff,
+                                    contentDescription = if (isFullyRead) "Chapter fully read" else "Unread chapter",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                             }
 
                             HorizontalDivider(
@@ -459,11 +510,9 @@ fun PublicationDetail(
                     Button(
                         onClick = {
                             val sortedChapters = pub.chapters.sortedBy { it.position }
-
-                            // find first chapter that is NOT fully read
-                            val chapterToContinue = sortedChapters.firstOrNull { chapter ->
-                                chapter.pageLastRead < chapter.pages
-                            } ?: sortedChapters.lastOrNull() // fallback: last chapter
+                            val chapterToContinue =
+                                sortedChapters.firstOrNull { it.pageLastRead < it.pages }
+                                    ?: sortedChapters.lastOrNull()
 
                             chapterToContinue?.let { chapter ->
                                 onChapterClick(pub, chapter)
@@ -491,5 +540,29 @@ fun PublicationDetail(
                 Text("Scanning chapters...", color = Color.White)
             }
         }
+    }
+
+    if (showRemoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text("Remove ${publication?.title} from library") },
+            text = { Text("Are you sure you want to remove this publication from your library? This action will NOT delete any files in your storage.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRemoveDialog = false
+                        shelfViewModel.removePublication(profileId = Configuration.selectedProfileId)
+                        onBack()
+                    }
+                ) {
+                    Text("Yes, remove", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
