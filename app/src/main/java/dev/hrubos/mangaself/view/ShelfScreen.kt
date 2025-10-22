@@ -293,9 +293,9 @@ fun PublicationGridItem(
                 .zIndex(1f) // bring above gradients
         ) {
             Icon(
-                // todo fix color (in light mode is black and thats not good for manga)
                 imageVector = if (publication.favourite) Icons.Default.Star else Icons.Default.StarBorder,
                 contentDescription = if (publication.favourite) "Unfavourite" else "Favourite",
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
 
