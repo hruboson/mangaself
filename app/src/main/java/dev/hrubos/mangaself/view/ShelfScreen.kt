@@ -163,7 +163,7 @@ fun ShelfWrapper(
                 ) { page ->
                     when (page) {
                         0 -> ShelfScreen(shelfViewModel, profileViewModel, onPublicationClick, onToggleFavourite, onContinueReading)
-                        1 -> AddMangaScreen(shelfViewModel, profileViewModel, onFolderSelected)
+                        1 -> AddMangaScreen(onFolderSelected)
                         else -> Text("Unknown Screen")
                     }
                 }
@@ -189,8 +189,6 @@ fun ShelfScreen(
 ) {
     val selectedProfile by profileViewModel.selectedProfile.collectAsState()
     val publications by shelfViewModel.filteredPublications.collectAsState(emptyList())
-    val showFavourites by shelfViewModel.showFavourites.collectAsState()
-    val searchQuery by shelfViewModel.searchQuery.collectAsState("")
 
     LaunchedEffect(selectedProfile?.id) {
         selectedProfile?.let { profile ->
@@ -224,8 +222,6 @@ fun ShelfScreen(
 
 @Composable
 fun AddMangaScreen(
-    shelfViewModel: ShelfViewModel,
-    profileViewModel: ProfileViewModel,
     onFolderSelected: (Uri) -> Unit
 ) {
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -297,6 +293,7 @@ fun PublicationGridItem(
                 .zIndex(1f) // bring above gradients
         ) {
             Icon(
+                // todo fix color (in light mode is black and thats not good for manga)
                 imageVector = if (publication.favourite) Icons.Default.Star else Icons.Default.StarBorder,
                 contentDescription = if (publication.favourite) "Unfavourite" else "Favourite",
             )
@@ -319,7 +316,7 @@ fun PublicationGridItem(
                 ),
             contentAlignment = Alignment.TopStart
         ) { Text(
-                text = chaptersRead.toString() + "/" + publication.chapters.size.toString(),//publication.lastChapterRead.toString() + "/" + publication.chapters.size.toString(),
+                text = chaptersRead.toString() + "/" + publication.chapters.size.toString(), // old version counting at least one page read in chapter: publication.lastChapterRead.toString() + "/" + publication.chapters.size.toString(),
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 10.sp,
@@ -345,7 +342,7 @@ fun PublicationGridItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = if (publication.title.isNotBlank()) publication.title else "Untitled",
+                text = publication.title.ifBlank { "Untitled" },
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 2,
@@ -426,7 +423,7 @@ fun PublicationDetail(
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(if (pub.coverPath.isNotBlank()) pub.coverPath else R.drawable.cover_placeholder)
+                                .data(pub.coverPath.ifBlank { R.drawable.cover_placeholder })
                                 .crossfade(true)
                                 .build(),
                             contentDescription = pub.title,
