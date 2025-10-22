@@ -30,7 +30,7 @@ private val numberRegex = Regex("\\d+")
 /**
  * a comparator for DocumentFile directories that sorts by numeric parts first, then by lexicographic order.
  */
-val chapterDirectoryComparator = Comparator<DocumentFile> { a, b ->
+val numericComparator = Comparator<DocumentFile> { a, b ->
     val nameA = a.name?.lowercase(Locale.ROOT) ?: ""
     val nameB = b.name?.lowercase(Locale.ROOT) ?: ""
 
@@ -46,7 +46,7 @@ val chapterDirectoryComparator = Comparator<DocumentFile> { a, b ->
  */
 fun List<DocumentFile>.filterAndSortChapters(): List<DocumentFile> =
     this.filter { it.isDirectory && it.name?.contains(Regex("\\d")) == true }
-        .sortedWith(chapterDirectoryComparator)
+        .sortedWith(numericComparator)
 
 fun String.padNumbers(): String =
     replace(Regex("\\d+")) { it.value.padStart(10, '0') }
