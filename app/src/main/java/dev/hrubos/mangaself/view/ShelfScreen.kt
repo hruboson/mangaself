@@ -257,6 +257,8 @@ fun PublicationGridItem(
     onToggleFavourite: (Publication) -> Unit,
     onContinueReading: (Publication, Chapter) -> Unit,
 ) {
+    val chaptersRead: Int = publication.chapters.count { it.pageLastRead == it.pages }
+
     Box(
         modifier = Modifier
             .aspectRatio(0.75f)
@@ -270,7 +272,7 @@ fun PublicationGridItem(
             .clickable { onClick() },
         contentAlignment = Alignment.BottomCenter
     ) {
-        val coverImage = if(publication.coverPath.isNotBlank()) publication.coverPath else R.drawable.cover_placeholder
+        val coverImage = publication.coverPath.ifBlank { R.drawable.cover_placeholder }
 
         // Cover image
         AsyncImage(
@@ -317,7 +319,7 @@ fun PublicationGridItem(
                 ),
             contentAlignment = Alignment.TopStart
         ) { Text(
-                text = publication.lastChapterRead.toString() + "/" + publication.chapters.size.toString(),
+                text = chaptersRead.toString() + "/" + publication.chapters.size.toString(),//publication.lastChapterRead.toString() + "/" + publication.chapters.size.toString(),
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 10.sp,
