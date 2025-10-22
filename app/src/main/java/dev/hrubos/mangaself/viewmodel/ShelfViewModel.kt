@@ -204,14 +204,6 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 return@launch
             }
 
-            fun compareNumberLists(a: List<Int>, b: List<Int>): Int {
-                val minLength = minOf(a.size, b.size)
-                for (i in 0 until minLength) {
-                    if (a[i] != b[i]) return a[i] - b[i]
-                }
-                return a.size - b.size
-            }
-
             val sortedDirs = docFolder.listFiles()
                 .toList().filterAndSortChapters()
 
