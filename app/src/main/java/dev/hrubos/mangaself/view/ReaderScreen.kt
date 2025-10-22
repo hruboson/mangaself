@@ -46,6 +46,7 @@ import coil.request.ImageRequest
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.ReadingMode
+import dev.hrubos.mangaself.model.numericComparator
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 
@@ -65,10 +66,10 @@ fun ReaderScreen(
 
     val context = LocalContext.current
     val chapterDir = DocumentFile.fromTreeUri(context, Uri.parse(chapter.systemPath))
-    val pageFiles = remember(chapter.systemPath) {
+    val pageFiles = remember(chapter.systemPath) { // should this be in model? but seems like a pain in the ass to store the pages separately and probably not optimal
         chapterDir?.listFiles()
             ?.filter { it.isFile && it.name?.matches(Regex(".*\\.(jpg|jpeg|png|webp|pdf)$", RegexOption.IGNORE_CASE)) == true }
-            ?.sortedBy { it.name }
+            ?.sortedWith(numericComparator)
             ?: emptyList()
     }
 
