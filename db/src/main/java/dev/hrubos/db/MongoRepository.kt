@@ -60,17 +60,19 @@ class MongoRepository(private val baseUrl: String) : Repository {
     }
 
     override suspend fun addChaptersToPublication(
+        profileId: String,
         pubUri: String,
         chapters: List<Chapter>
     ) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun editPublicationCover(pubUri: String, coverUri: String) {
+    override suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) {
         TODO("Not yet implemented")
     }
 
     override suspend fun togglePublicationFavourite(
+        profileId: String,
         pubUri: String,
         toggleTo: Boolean
     ) {
@@ -85,7 +87,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getPublicationBySystemPath(systemPath: String): Publication {
+    override suspend fun getPublicationBySystemPath(profileId: String, systemPath: String): Publication? {
         TODO("Not yet implemented")
     }
 
@@ -106,6 +108,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
     }
 
     override suspend fun updateChapter(
+        profileId: String,
         pub: Publication,
         chapter: Chapter,
         lastRead: Int

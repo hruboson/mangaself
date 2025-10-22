@@ -86,14 +86,14 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     fun loadPublication(systemPath: String){
         Log.d("ShelfViewModel", "Loading publication with path $systemPath")
         viewModelScope.launch {
-            val pub = db.getPublicationBySystemPath(systemPath)
+            val pub = db.getPublicationBySystemPath(Configuration.selectedProfileId, systemPath)
             _publication.value = pub
         }
     }
 
-    suspend fun getPublicationBySystemPath(systemPath: String): Publication{
+    suspend fun getPublicationBySystemPath(systemPath: String): Publication? {
         Log.d("ShelfViewModel", "Loading publication with path $systemPath")
-        return db.getPublicationBySystemPath(systemPath)
+        return db.getPublicationBySystemPath(Configuration.selectedProfileId, systemPath)
     }
 
     fun addPublication(profileId: String = "", uri: Uri){
@@ -110,7 +110,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
                 val coverUri = findFirstImageInFirstChapter(uri)
                 if (coverUri != null) {
-                    db.editPublicationCover(pub.systemPath, coverUri.toString())
+                    db.editPublicationCover(Configuration.selectedProfileId, pub.systemPath, coverUri.toString())
                     Log.d("ShelfViewModel", "Set cover to $coverUri")
                 } else {
                     Log.d("ShelfViewModel", "No cover image found for publication ${pub.systemPath}")
@@ -156,12 +156,12 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     fun togglePublicationFavourite(pub: Publication){
         viewModelScope.launch {
-            db.togglePublicationFavourite(pub.systemPath, !pub.favourite)
+            db.togglePublicationFavourite(Configuration.selectedProfileId, pub.systemPath, !pub.favourite)
 
             // update value immediately
-            val updatedPub = db.getPublicationBySystemPath(pub.systemPath)
+            val updatedPub = db.getPublicationBySystemPath(Configuration.selectedProfileId, pub.systemPath)
             // meh this might be super inefficient ---> look into this
-            _publications.value = _publications.value.map { if(it.systemPath == pub.systemPath) updatedPub else it }
+            _publications.value = _publications.value.map { (if(it.systemPath == pub.systemPath) updatedPub else it) as Publication }
         }
     }
 
@@ -177,9 +177,9 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     fun updateChapterLastRead(pub: Publication, chapter: Chapter, lastPage: Int){
         viewModelScope.launch {
             try {
-                db.updateChapter(pub, chapter, lastPage)
+                db.updateChapter(Configuration.selectedProfileId, pub, chapter, lastPage)
 
-                val updatedPub = db.getPublicationBySystemPath(pub.systemPath)
+                val updatedPub = db.getPublicationBySystemPath(Configuration.selectedProfileId, pub.systemPath)
                 _publication.value = updatedPub
             } catch (e: Exception) {
                 Log.e("ShelfViewModel", "Failed to update chapter ${pub.title}/${chapter.title}", e)
@@ -233,11 +233,11 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             }
 
             try {
-                db.addChaptersToPublication(pub.systemPath, chaptersList)
+                db.addChaptersToPublication(Configuration.selectedProfileId, pub.systemPath, chaptersList)
                 Log.d("ChapterScanner", "Finished scanning chapters: ${chaptersList.size} found")
 
                 // refresh publication after DB write
-                val updated = db.getPublicationBySystemPath(pub.systemPath)
+                val updated = db.getPublicationBySystemPath(Configuration.selectedProfileId, pub.systemPath)
                 withContext(Dispatchers.Main) {
                     _publication.value = updated
                 }
@@ -277,6 +277,6 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         )
-        addPublication(Configuration.selectedProfileId ?: "", uri)
+        addPublication(Configuration.selectedProfileId, uri)
     }
 }

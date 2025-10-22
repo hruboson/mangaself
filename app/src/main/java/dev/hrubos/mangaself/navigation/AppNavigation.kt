@@ -136,7 +136,8 @@ fun AppNavigation(
             LaunchedEffect(pubPath) {
                 val pub = shelfViewModel.getPublicationBySystemPath(pubPath)
                 publication = pub
-                chapter = pub.chapters.firstOrNull { it.systemPath == chapterPath }
+                if(pub == null) { navController.popBackStack() }
+                chapter = pub?.chapters?.firstOrNull { it.systemPath == chapterPath }
             }
 
             if (publication != null && chapter != null) {

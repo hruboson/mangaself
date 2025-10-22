@@ -8,5 +8,5 @@ val Context.dataStore by preferencesDataStore(name = "app_preferences")
 object Configuration {
     var useLocalDB: Boolean = true
     var readingMode: ReadingMode = ReadingMode.LONGSTRIP
-    var selectedProfileId: String? = ""
+    var selectedProfileId: String = ""
 }

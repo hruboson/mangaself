@@ -75,60 +75,81 @@ class RealmRepository(application: android.app.Application) : Repository {
             val profile = query<Profile>("id == $0", profileId).first().find()
                 ?: throw IllegalArgumentException("Profile not found")
 
-            val existingPublication = query<Publication>("systemPath == $0", path).first().find()
+            val existing = profile.associatedPublications
+                .firstOrNull { it.systemPath == path }
 
-            val publicationToAdd = if (existingPublication != null) {
-                // reuse existing record
-                existingPublication
-            } else {
-                // create new record
-                copyToRealm(
-                    Publication().apply {
-                        systemPath = path
-                        this.title = title
-                        this.description = description
-                        favourite = false
-                    }
-                )
+            if (existing != null) {
+                return@writeBlocking existing
             }
 
-            if (!profile.associatedPublications.contains(publicationToAdd)) {
-                profile.associatedPublications.add(publicationToAdd)
-            }
+            // create new record
+            val newPub = copyToRealm(
+                Publication().apply {
+                    systemPath = path
+                    this.title = title
+                    this.description = description
+                    favourite = false
+                }
+            )
 
-            publicationToAdd // return publication
+            profile.associatedPublications.add(newPub)
+
+            newPub // return publication
         }
     }
 
     override suspend fun addChaptersToPublication(
+        profileId: String,
         pubUri: String,
         chapters: List<Chapter>
     ) {
         realm.write {
-            val publication = query<Publication>("systemPath == $0", pubUri).first().find()
+            val profile = query<Profile>("id == $0", profileId).first().find()
                 ?: return@write
 
-            publication.chapters.clear() // clear existing
-            publication.chapters.addAll(chapters) // add new
+            val publication = profile.associatedPublications
+                .firstOrNull { it.systemPath == pubUri } ?: return@write
+
+            publication.chapters.clear()
+            chapters.forEach { ch ->
+                val unmanagedCopy = Chapter().apply { // has to be copied for per-profile functionality
+                    title = ch.title
+                    systemPath = ch.systemPath
+                    description = ch.description
+                    position = ch.position
+                    pages = ch.pages
+                    pageLastRead = ch.pageLastRead
+                    read = ch.read
+                }
+                val newChapter = copyToRealm(unmanagedCopy)
+                publication.chapters.add(newChapter)
+            }
         }
     }
 
-    override suspend fun editPublicationCover(pubUri: String, coverUri: String) {
+    override suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) {
         realm.write {
-            val publication = query<Publication>("systemPath == $0", pubUri).first().find()
+            val profile = query<Profile>("id == $0", profileId).first().find()
                 ?: return@write
+
+            val publication = profile.associatedPublications
+                .firstOrNull { it.systemPath == pubUri } ?: return@write
 
             publication.coverPath = coverUri
         }
     }
 
     override suspend fun togglePublicationFavourite(
+        profileId: String,
         pubUri: String,
         toggleTo: Boolean
     ) {
         realm.write {
-            val publication = query<Publication>("systemPath == $0", pubUri).first().find()
+            val profile = query<Profile>("id == $0", profileId).first().find()
                 ?: return@write
+
+            val publication = profile.associatedPublications
+                .firstOrNull { it.systemPath == pubUri } ?: return@write
 
             publication.favourite = toggleTo
         }
@@ -143,9 +164,11 @@ class RealmRepository(application: android.app.Application) : Repository {
         return profile?.associatedPublications?.toList() ?: emptyList()
     }
 
-    override suspend fun getPublicationBySystemPath(systemPath: String): Publication {
-        return realm.query<Publication>("systemPath == $0", systemPath).first().find()
-            ?: throw NoSuchElementException("Publication with systemPath '$systemPath' not found")
+    override suspend fun getPublicationBySystemPath(profileId: String, systemPath: String): Publication? {
+        val profile = realm.query<Profile>("id == $0", profileId).first().find()
+            ?: throw IllegalArgumentException("Profile not found")
+
+        return profile.associatedPublications.firstOrNull { it.systemPath == systemPath }
     }
 
     override suspend fun removePublication(systemPath: String) {
@@ -162,14 +185,11 @@ class RealmRepository(application: android.app.Application) : Repository {
             val profile = query<Profile>("id == $0", profileId).first().find()
                 ?: throw IllegalArgumentException("Profile not found")
 
-            val publication = query<Publication>("systemPath == $0", systemPath).first().find()
-                ?: return@write
+            val publication = profile.associatedPublications
+                .firstOrNull { it.systemPath == systemPath }
 
-            profile.associatedPublications.remove(publication)
-
-            // remove completely if no more references in profile
-            val stillReferenced = query<Profile>().find().any { it.associatedPublications.contains(publication) }
-            if (!stillReferenced) {
+            if (publication != null) {
+                profile.associatedPublications.remove(publication)
                 delete(publication)
             }
         }
@@ -183,16 +203,20 @@ class RealmRepository(application: android.app.Application) : Repository {
     }
 
     override suspend fun updateChapter(
+        profileId: String,
         pub: Publication,
         chapter: Chapter,
         lastRead: Int
     ) {
         realm.write {
-            val managedPub = query<Publication>("systemPath == $0", pub.systemPath)
-                .first().find() ?: return@write
-
-            val managedChapter = managedPub.chapters.firstOrNull { it.title == chapter.title }
+            val profile = query<Profile>("id == $0", profileId).first().find()
                 ?: return@write
+
+            val managedPub = profile.associatedPublications
+                .firstOrNull { it.systemPath == pub.systemPath } ?: return@write
+
+            val managedChapter = managedPub.chapters
+                .firstOrNull { it.title == chapter.title } ?: return@write
 
             managedChapter.pageLastRead = lastRead
             managedChapter.read = lastRead >= managedChapter.pages

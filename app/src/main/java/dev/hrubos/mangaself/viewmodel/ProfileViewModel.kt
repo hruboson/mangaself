@@ -36,7 +36,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         viewModelScope.launch {
             dataStore.data.map { it[LAST_SELECTED_PROFILE_ID] }
                 .collect { id ->
-                    Configuration.selectedProfileId = id
+                    Configuration.selectedProfileId = id ?: ""
                 }
         }
     }
@@ -75,7 +75,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     suspend fun restoreLastSelectedProfile(): Profile? {
         val id = dataStore.data.first()[LAST_SELECTED_PROFILE_ID]
 
-        if (id == null) {
+        if (id == null || id == "") {
             _selectedProfile.value = null
             return null
         }

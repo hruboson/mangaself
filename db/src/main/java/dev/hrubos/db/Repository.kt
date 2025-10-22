@@ -9,15 +9,15 @@ interface Repository {
     suspend fun updateProfile(profile: Profile, name: String, readingMode: String)
 
     suspend fun addPublication(profileId: String, path: String, title: String, description: String): Publication
-    suspend fun addChaptersToPublication(pubUri: String, chapters: List<Chapter>)
-    suspend fun editPublicationCover(pubUri: String, coverUri: String)
-    suspend fun togglePublicationFavourite(pubUri: String, toggleTo: Boolean)
+    suspend fun addChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
+    suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String)
+    suspend fun togglePublicationFavourite(profileId: String, pubUri: String, toggleTo: Boolean)
     suspend fun getAllPublications(): List<Publication>
     suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication>
-    suspend fun getPublicationBySystemPath(systemPath: String): Publication
+    suspend fun getPublicationBySystemPath(profileId: String, systemPath: String): Publication?
     suspend fun removePublication(systemPath: String)
     suspend fun removePublicationFromProfile(profileId: String, systemPath: String)
     suspend fun clearPublications()
 
-    suspend fun updateChapter(pub: Publication, chapter: Chapter, lastRead: Int)
+    suspend fun updateChapter(profileId: String, pub: Publication, chapter: Chapter, lastRead: Int)
 }
