@@ -219,15 +219,15 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                     continue
                 }
 
-                val chapter = Chapter().apply {
-                    title = dir.name ?: "Untitled Chapter"
-                    systemPath = dir.uri.toString()
-                    description = ""
-                    pages = pagesCount
-                    pageLastRead = 0
+                val chapter = Chapter(
+                    title = dir.name ?: "Untitled Chapter",
+                    systemPath = dir.uri.toString(),
+                    description = "",
+                    position = position++,
+                    pages = pagesCount,
+                    pageLastRead = 0,
                     read = false
-                    this.position = position++
-                }
+                )
 
                 chaptersList.add(chapter)
             }

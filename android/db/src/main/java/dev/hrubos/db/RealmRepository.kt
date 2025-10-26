@@ -11,9 +11,9 @@ class RealmRepository(application: android.app.Application) : Repository {
     init {
         val config = RealmConfiguration.Builder(
             schema = setOf(
-                Profile::class,
-                Publication::class,
-                Chapter::class
+                ProfileRO::class,
+                PublicationRO::class,
+                ChapterRO::class
             )
         ).name("app.realm")
             .deleteRealmIfMigrationNeeded()
@@ -22,38 +22,39 @@ class RealmRepository(application: android.app.Application) : Repository {
     }
 
     override suspend fun getProfile(id: String): Profile  {
-        return realm.query<Profile>("id == $0", id).first().find()
+        val result = realm.query<ProfileRO>("id == $0", id).first().find()
             ?: throw NoSuchElementException("Profile with id $id not found")
+        return result.toProfile()
     }
 
     override suspend fun getAllProfiles(): List<Profile> {
-        return realm.query<Profile>().find().toList()
+        return realm.query<ProfileRO>().find().map { it.toProfile() }
     }
 
     override suspend fun insertProfile(profile: Profile): Profile {
         realm.write {
-            copyToRealm(profile)
+            copyToRealm(profile.toRealmObject())
         }
         return profile
     }
 
     override suspend fun deleteProfile(profile: Profile) {
         realm.write {
-            val managedProfile = findLatest(profile) ?: return@write
+            val managedProfile = findLatest(profile.toRealmObject()) ?: return@write
             delete(managedProfile)
         }
     }
 
     override suspend fun clearProfiles() {
         realm.write {
-            val allProfiles = query<Profile>().find()
+            val allProfiles = query<ProfileRO>().find()
             delete(allProfiles)
         }
     }
 
     override suspend fun updateProfile(profile: Profile, name: String, readingMode: String) {
         realm.write {
-            val managedProfile = findLatest(profile) ?: return@write
+            val managedProfile = findLatest(profile.toRealmObject()) ?: return@write
 
             if(name != "") {
                 managedProfile.name = name
@@ -72,29 +73,27 @@ class RealmRepository(application: android.app.Application) : Repository {
         description: String
     ): Publication {
         return realm.writeBlocking {
-            val profile = query<Profile>("id == $0", profileId).first().find()
+            val profile = query<ProfileRO>("id == $0", profileId).first().find()
                 ?: throw IllegalArgumentException("Profile not found")
 
             val existing = profile.associatedPublications
                 .firstOrNull { it.systemPath == path }
 
             if (existing != null) {
-                return@writeBlocking existing
+                return@writeBlocking existing.toPublication()
             }
 
             // create new record
-            val newPub = copyToRealm(
-                Publication().apply {
-                    systemPath = path
-                    this.title = title
-                    this.description = description
-                    favourite = false
-                }
-            )
+            val newPubRO = PublicationRO().apply {
+                systemPath = path
+                this.title = title
+                this.description = description
+                favourite = false
+            }
 
+            val newPub = copyToRealm(newPubRO)
             profile.associatedPublications.add(newPub)
-
-            newPub // return publication
+            newPub.toPublication() // return publication
         }
     }
 
@@ -104,7 +103,7 @@ class RealmRepository(application: android.app.Application) : Repository {
         chapters: List<Chapter>
     ) {
         realm.write {
-            val profile = query<Profile>("id == $0", profileId).first().find()
+            val profile = query<ProfileRO>("id == $0", profileId).first().find()
                 ?: return@write
 
             val publication = profile.associatedPublications
@@ -112,24 +111,17 @@ class RealmRepository(application: android.app.Application) : Repository {
 
             publication.chapters.clear()
             chapters.forEach { ch ->
-                val unmanagedCopy = Chapter().apply { // has to be copied for per-profile functionality
-                    title = ch.title
-                    systemPath = ch.systemPath
-                    description = ch.description
-                    position = ch.position
-                    pages = ch.pages
-                    pageLastRead = ch.pageLastRead
-                    read = ch.read
-                }
-                val newChapter = copyToRealm(unmanagedCopy)
-                publication.chapters.add(newChapter)
+                val unmanagedChapter = ch.toRealmObject()
+                val managedChapter = copyToRealm(unmanagedChapter)
+
+                publication.chapters.add(managedChapter)
             }
         }
     }
 
     override suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) {
         realm.write {
-            val profile = query<Profile>("id == $0", profileId).first().find()
+            val profile = query<ProfileRO>("id == $0", profileId).first().find()
                 ?: return@write
 
             val publication = profile.associatedPublications
@@ -145,7 +137,7 @@ class RealmRepository(application: android.app.Application) : Repository {
         toggleTo: Boolean
     ) {
         realm.write {
-            val profile = query<Profile>("id == $0", profileId).first().find()
+            val profile = query<ProfileRO>("id == $0", profileId).first().find()
                 ?: return@write
 
             val publication = profile.associatedPublications
@@ -156,24 +148,26 @@ class RealmRepository(application: android.app.Application) : Repository {
     }
 
     override suspend fun getAllPublications(): List<Publication> {
-        return realm.query<Publication>().find().toList()
+        return realm.query<PublicationRO>().find().map { it.toPublication() }
     }
 
     override suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication> {
-        val profile = realm.query<Profile>("id == $0", profileId).first().find()
-        return profile?.associatedPublications?.toList() ?: emptyList()
+        val profile = realm.query<ProfileRO>("id == $0", profileId).first().find()
+        return profile?.associatedPublications?.map { it.toPublication() } ?: emptyList()
     }
 
     override suspend fun getPublicationBySystemPath(profileId: String, systemPath: String): Publication? {
-        val profile = realm.query<Profile>("id == $0", profileId).first().find()
+        val profile = realm.query<ProfileRO>("id == $0", profileId).first().find()
             ?: throw IllegalArgumentException("Profile not found")
 
-        return profile.associatedPublications.firstOrNull { it.systemPath == systemPath }
+        return profile.associatedPublications
+            .firstOrNull { it.systemPath == systemPath }
+            ?.toPublication()
     }
 
     override suspend fun removePublication(systemPath: String) {
         realm.write {
-            val publication = query<Publication>("systemPath == $0", systemPath).first().find()
+            val publication = query<PublicationRO>("systemPath == $0", systemPath).first().find()
             if (publication != null) {
                 delete(publication)
             }
@@ -182,7 +176,7 @@ class RealmRepository(application: android.app.Application) : Repository {
 
     override suspend fun removePublicationFromProfile(profileId: String, systemPath: String) {
         realm.write {
-            val profile = query<Profile>("id == $0", profileId).first().find()
+            val profile = query<ProfileRO>("id == $0", profileId).first().find()
                 ?: throw IllegalArgumentException("Profile not found")
 
             val publication = profile.associatedPublications
@@ -197,7 +191,7 @@ class RealmRepository(application: android.app.Application) : Repository {
 
     override suspend fun clearPublications(){
         realm.write {
-            val all = query<Publication>().find()
+            val all = query<PublicationRO>().find()
             delete(all)
         }
     }
@@ -209,18 +203,12 @@ class RealmRepository(application: android.app.Application) : Repository {
         lastRead: Int
     ) {
         realm.write {
-            val profile = query<Profile>("id == $0", profileId).first().find()
-                ?: return@write
-
-            val managedPub = profile.associatedPublications
-                .firstOrNull { it.systemPath == pub.systemPath } ?: return@write
-
-            val managedChapter = managedPub.chapters
-                .firstOrNull { it.title == chapter.title } ?: return@write
+            val profile = query<ProfileRO>("id == $0", profileId).first().find() ?: return@write
+            val managedPub = profile.associatedPublications.firstOrNull { it.systemPath == pub.systemPath } ?: return@write
+            val managedChapter = managedPub.chapters.firstOrNull { it.title == chapter.title } ?: return@write
 
             managedChapter.pageLastRead = lastRead
             managedChapter.read = lastRead >= managedChapter.pages
-
             managedPub.lastChapterRead = managedChapter.position + 1
         }
     }
