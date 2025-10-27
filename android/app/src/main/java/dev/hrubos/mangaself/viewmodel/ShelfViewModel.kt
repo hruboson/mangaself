@@ -250,7 +250,12 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     }
 
     private fun fetchMetadata(pub: Publication){
-
+        // manifest - android.permission.INTERNET
+        // launched effect - with content - url, response=URL(...).readText()!, json, ...
+        // exception handling - try catch / responseCode - if code ... else if code ... else ...
+        // api key security - do not save directly in code, save in local.properties (equal to .env)
+        //      BuildConfig.API_KEY
+        // optimize API calls - caching (HTTP cache, in-memory cache, App cache), background loading, debounce, throttle, e-tag
     }
 
     private fun findFirstImageInFirstChapter(pubUri: Uri): Uri? {
