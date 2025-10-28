@@ -19,7 +19,7 @@ endif
 
 # Default target: run main.py
 run: venv
-	$(PYTHON) main.py
+	uvicorn main:app --reload --host 0.0.0.0 --port 8088
 
 # Open a shell inside the virtual environment
 shell: venv
