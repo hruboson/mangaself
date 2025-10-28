@@ -3,18 +3,14 @@ package dev.hrubos.db
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.serialization.gson.gson
-
-/**
- *
- *
- *  TODO THIS WHOLE CLASS, THE REQUESTS ARE GIBBERISH NOW
- *
- *
- */
 
 class MongoRepository(private val baseUrl: String) : Repository {
 
@@ -22,7 +18,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
         install(ContentNegotiation) { gson() }
     }
 
-    override suspend fun getProfile(id: String): Profile {
+    override suspend fun getProfile(id: String): Profile? {
         return client.get("$baseUrl/profile/$id").body()
     }
 
@@ -31,23 +27,29 @@ class MongoRepository(private val baseUrl: String) : Repository {
     }
 
     override suspend fun insertProfile(profile: Profile): Profile {
-        return client.post("$baseUrl/users") {
+        return client.post("$baseUrl/profile") {
+            contentType(ContentType.Application.Json)
             setBody(profile)
         }.body()
     }
 
     override suspend fun deleteProfile(profile: Profile) {
-        return client.post("$baseUrl/deleteProfile/").body()
+        client.delete("$baseUrl/profile/${profile.id}")
     }
 
     override suspend fun clearProfiles() {
-        return client.post("$baseUrl/clearProfiles").body()
+        client.delete("$baseUrl/profiles")
     }
 
     override suspend fun updateProfile(profile: Profile, name: String, readingMode: String) {
-        return client.post("$baseUrl/updateProfile") {
-            setBody(profile)
-        }.body()
+        val updated = profile.copy(
+            name = if (name.isNotEmpty()) name else profile.name,
+            readingMode = if (readingMode.isNotEmpty()) readingMode else profile.readingMode
+        )
+        client.put("$baseUrl/profile/${profile.id}") {
+            contentType(ContentType.Application.Json)
+            setBody(updated)
+        }
     }
 
     override suspend fun addPublication(
@@ -56,7 +58,7 @@ class MongoRepository(private val baseUrl: String) : Repository {
         title: String,
         description: String
     ): Publication {
-        TODO("Not yet implemented")
+        return Publication()
     }
 
     override suspend fun addChaptersToPublication(
@@ -64,11 +66,11 @@ class MongoRepository(private val baseUrl: String) : Repository {
         pubUri: String,
         chapters: List<Chapter>
     ) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun togglePublicationFavourite(
@@ -76,35 +78,34 @@ class MongoRepository(private val baseUrl: String) : Repository {
         pubUri: String,
         toggleTo: Boolean
     ) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun getAllPublications(): List<Publication> {
-        TODO("Not yet implemented")
+        return client.get("$baseUrl/publications").body()
     }
 
     override suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication> {
-        TODO("Not yet implemented")
+        return client.get("$baseUrl/profile/$profileId/publications").body()
     }
 
-    override suspend fun getPublicationBySystemPath(profileId: String, systemPath: String): Publication? {
-        TODO("Not yet implemented")
+    override suspend fun getPublicationBySystemPath(
+        profileId: String,
+        systemPath: String
+    ): Publication? {
+        return null
     }
 
     override suspend fun removePublication(systemPath: String) {
-        TODO("Not yet implemented")
+
     }
 
-    override suspend fun removePublicationFromProfile(
-        profileId: String,
-        systemPath: String
-    ) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun removePublicationFromProfile(profileId: String, systemPath: String) {
 
+    }
 
     override suspend fun clearPublications() {
-        TODO("Not yet implemented")
+        client.delete("$baseUrl/publications")
     }
 
     override suspend fun updateChapter(
@@ -113,6 +114,6 @@ class MongoRepository(private val baseUrl: String) : Repository {
         chapter: Chapter,
         lastRead: Int
     ) {
-        TODO("Not yet implemented")
+
     }
 }

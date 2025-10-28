@@ -1,5 +1,7 @@
 package dev.hrubos.db
 
+import android.util.Log
+
 class Database(
     useLocal: Boolean,
     application: android.app.Application? = null, // only needed for Realm
@@ -13,16 +15,18 @@ class Database(
             if (application == null) {
                 throw IllegalArgumentException("Application instance required for RealmRepository")
             }
+            Log.d("Database", "Using local Realm repository")
             RealmRepository(application)
         } else {
             if (mongoBaseUrl == null) {
                 throw IllegalArgumentException("Mongo base URL required for MongoRepository")
             }
+            Log.d("Database", "Using API with MongoDB")
             MongoRepository(mongoBaseUrl)
         }
     }
 
-    suspend fun getProfile(id: String): Profile = repository.getProfile(id)
+    suspend fun getProfile(id: String): Profile? = repository.getProfile(id)
     suspend fun getProfiles(): List<Profile> = repository.getAllProfiles()
     suspend fun addProfile(profile: Profile): Profile = repository.insertProfile(profile)
     suspend fun deleteProfile(profile: Profile) = repository.deleteProfile(profile)
