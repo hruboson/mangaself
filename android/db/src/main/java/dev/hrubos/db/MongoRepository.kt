@@ -5,12 +5,15 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.gson.gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 class MongoRepository(private val baseUrl: String) : Repository {
 
@@ -58,7 +61,20 @@ class MongoRepository(private val baseUrl: String) : Repository {
         title: String,
         description: String
     ): Publication {
-        return Publication()
+        val newPublication = Publication(
+            systemPath = path,
+            title = title,
+            description = description,
+            coverPath = "",
+            chapters = emptyList(),
+            lastChapterRead = 0,
+            favourite = false
+        )
+
+        return client.post("$baseUrl/profile/$profileId/publications") {
+            contentType(ContentType.Application.Json)
+            setBody(newPublication)
+        }.body()
     }
 
     override suspend fun addChaptersToPublication(
@@ -66,11 +82,18 @@ class MongoRepository(private val baseUrl: String) : Repository {
         pubUri: String,
         chapters: List<Chapter>
     ) {
-
+        client.put("$baseUrl/profile/$profileId/publication/chapters") {
+            parameter("pubUri", pubUri)
+            contentType(ContentType.Application.Json)
+            setBody(chapters)
+        }
     }
 
     override suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) {
+        val encodedPubUri = URLEncoder.encode(pubUri, StandardCharsets.UTF_8.toString())
+        val encodedCoverUri = URLEncoder.encode(coverUri, StandardCharsets.UTF_8.toString())
 
+        client.put("$baseUrl/profile/$profileId/publication/cover?systemPath=$encodedPubUri&coverPath=$encodedCoverUri")
     }
 
     override suspend fun togglePublicationFavourite(
@@ -93,15 +116,18 @@ class MongoRepository(private val baseUrl: String) : Repository {
         profileId: String,
         systemPath: String
     ): Publication? {
-        return null
+        val encodedPath = URLEncoder.encode(systemPath, StandardCharsets.UTF_8.toString()) // encode so it doesn't cause trouble in the query/url
+        return client.get("$baseUrl/profile/$profileId/publication?systemPath=$encodedPath")
+            .body()
     }
 
     override suspend fun removePublication(systemPath: String) {
-
+        client.delete("$baseUrl/publications")
     }
 
     override suspend fun removePublicationFromProfile(profileId: String, systemPath: String) {
-
+        val encodedPath = URLEncoder.encode(systemPath, StandardCharsets.UTF_8.toString()) // encode so it doesn't cause trouble in the query/url
+        client.delete("$baseUrl/profile/$profileId/publication?systemPath=$encodedPath")
     }
 
     override suspend fun clearPublications() {

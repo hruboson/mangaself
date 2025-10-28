@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Body
 from typing import List
 from pymongo import ReturnDocument
 from pymongo.collection import Collection
@@ -14,7 +14,27 @@ COL: Collection = profiles_collection
 # -------------------- HELPERS --------------------
 
 def find_profile(id: str):
-    return COL.find_one({"id": id})
+    doc = profiles_collection.find_one({"id": id})
+    if not doc:
+        return None
+    # Convert the Mongo document to a Pydantic Profile
+    return Profile(
+        id=doc["id"],
+        name=doc.get("name", ""),
+        readingMode=doc.get("readingMode", ""),
+        associatedPublications=[
+            Publication(
+                systemPath=p.get("systemPath", ""),
+                coverPath=p.get("coverPath", ""),
+                title=p.get("title", ""),
+                description=p.get("description", ""),
+                chapters=[Chapter(**c) for c in p.get("chapters", [])],
+                lastChapterRead=p.get("lastChapterRead", 0),
+                favourite=p.get("favourite", False)
+            )
+            for p in doc.get("associatedPublications", [])
+        ]
+    )
 
 # -------------------- PROFILES --------------------
 
@@ -59,46 +79,123 @@ def update_profile(id: str, updated: Profile):
 
 @app.get("/publications", response_model=List[Publication])
 def get_all_publications():
-    pass
+    pipeline = [
+        {"$project": {"associatedPublications": 1, "_id": 0}},
+        {"$unwind": "$associatedPublications"},
+        {"$replaceRoot": {"newRoot": "$associatedPublications"}}
+    ]
+
+    all_pubs = [
+        Publication(
+            systemPath=p.get("systemPath", ""),
+            coverPath=p.get("coverPath", ""),
+            title=p.get("title", ""),
+            description=p.get("description", ""),
+            chapters=[Chapter(**c) for c in p.get("chapters", [])],
+            lastChapterRead=p.get("lastChapterRead", 0),
+            favourite=p.get("favourite", False)
+        )
+        for p in COL.aggregate(pipeline)
+    ]
+
+    return all_pubs
 
 @app.post("/profile/{id}/publications", response_model=Publication)
 def add_publication(id: str, pub: Publication):
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+    
+    # check if publication already exists -> return existing
+    for existing_pub in profile.associatedPublications:
+        if existing_pub.systemPath == pub.systemPath:
+            return existing_pub
+
+    res = COL.find_one_and_update(
+        {"id": id},
+        {"$push": {"associatedPublications": pub.dict()}},
+        return_document=ReturnDocument.AFTER
+    )
+
+    added_pub = res["associatedPublications"][-1]
+    return Publication(
+        systemPath=added_pub.get("systemPath", ""),
+        coverPath=added_pub.get("coverPath", ""),
+        title=added_pub.get("title", ""),
+        description=added_pub.get("description", ""),
+        chapters=[Chapter(**c) for c in added_pub.get("chapters", [])],
+        lastChapterRead=added_pub.get("lastChapterRead", 0),
+        favourite=added_pub.get("favourite", False)
+    )
 
 @app.get("/profile/{id}/publications", response_model=List[Publication])
 def get_all_publications_of_profile(id: str):
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+    return profile.associatedPublications
 
 @app.get("/profile/{id}/publication", response_model=Publication)
 def get_publication_by_system_path(id: str, systemPath: str = Query(...)):
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+
+    pipeline = [
+        {"$match": {"id": id}},
+        {"$unwind": "$associatedPublications"},
+        {"$match": {"associatedPublications.systemPath": systemPath}},
+        {"$replaceRoot": {"newRoot": "$associatedPublications"}}
+    ]
+
+    result = list(COL.aggregate(pipeline))
+    if not result:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    pub_doc = result[0]
+    return Publication(
+        systemPath=pub_doc.get("systemPath", ""),
+        coverPath=pub_doc.get("coverPath", ""),
+        title=pub_doc.get("title", ""),
+        description=pub_doc.get("description", ""),
+        chapters=[Chapter(**c) for c in pub_doc.get("chapters", [])],
+        lastChapterRead=pub_doc.get("lastChapterRead", 0),
+        favourite=pub_doc.get("favourite", False)
+    )
 
 @app.delete("/publication")
 def remove_publication(systemPath: str = Query(...)):
-    profile = find_profile(id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+    result = COL.update_many(
+        {},  # match all profiles
+        {"$pull": {"associatedPublications": {"systemPath": systemPath}}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {"status": "deleted", "modified_profiles": result.modified_count}
 
 @app.delete("/profile/{id}/publication")
 def remove_publication_from_profile(id: str, systemPath: str = Query(...)):
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+
+    COL.update_one(
+        {"id": id},
+        {"$pull": {"associatedPublications": {"systemPath": systemPath}}}
+    )
+
+    return {"status": "deleted"}
 
 @app.delete("/publications")
 def clear_publications():
-    pass
+    result = COL.update_many({}, {"$set": {"associatedPublications": []}})
+
+    return {
+        "status": "cleared",
+        "modified_profiles": result.modified_count
+    }
 
 # -------------------- PUBLICATION PROPERTIES --------------------
 
@@ -107,7 +204,16 @@ def edit_publication_cover(id: str, systemPath: str = Query(...), coverPath: str
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+
+    result = COL.update_one(
+        {"id": id, "associatedPublications.systemPath": systemPath},
+        {"$set": {"associatedPublications.$.coverPath": coverPath}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {"status": "updated", "coverPath": coverPath}
 
 @app.put("/profile/{id}/publication/favourite")
 def toggle_publication_favourite(id: str, systemPath: str = Query(...), toggleTo: bool = Query(...)):
@@ -120,19 +226,25 @@ def toggle_publication_favourite(id: str, systemPath: str = Query(...), toggleTo
 
 # Add chapters to publication
 @app.put("/profile/{id}/publication/chapters")
-def add_chapters_to_publication(id: str):
+def add_chapters_to_publication(
+    id: str,
+    pubUri: str = Query(...),
+    chapters: List[Chapter] = Body(...)
+):
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
 
-# Edit cover
-@app.put("/profile/{id}/publication/cover")
-def edit_publication_cover(id: str):
-    profile = find_profile(id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+    # Replace chapters list of the matching publication
+    result = COL.update_one(
+        {"id": id, "associatedPublications.systemPath": pubUri},
+        {"$set": {"associatedPublications.$.chapters": [ch.dict() for ch in chapters]}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {"status": "chapters updated", "count": len(chapters)}
 
 # Toggle favourite
 @app.put("/profile/{id}/publication/favourite")
