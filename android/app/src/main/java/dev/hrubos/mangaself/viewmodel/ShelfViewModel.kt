@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Database
@@ -26,11 +27,20 @@ import kotlinx.coroutines.withContext
 
 class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
-    // will be assigned on initialization
-    private val db = Database(
+    private var _db: Database = Database(
         useLocal = Configuration.useLocalDB,
-        application = application
+        application = application,
+        mongoBaseUrl = Configuration.apiURL ?: ""
     )
+    val db: Database get() = _db
+
+    fun reinitializeDatabase() {
+        _db = Database(
+            useLocal = Configuration.useLocalDB,
+            application = application,
+            mongoBaseUrl = Configuration.apiURL ?: ""
+        )
+    }
 
     private val _publications = MutableStateFlow<List<Publication>>(emptyList())
     val publications: StateFlow<List<Publication>> = _publications.asStateFlow()
@@ -105,6 +115,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 Log.d("ShelfViewModel", "Adding publication with path ${rawUri}")
+
                 val pub = db.addPublication(profileId, rawUri, title = dirName)
                 scanChapters(pub)
 

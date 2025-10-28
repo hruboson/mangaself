@@ -16,21 +16,35 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.navigation.AppNavigation
 import dev.hrubos.mangaself.ui.theme.MangaselfTheme
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
     private val profileViewModel: ProfileViewModel by viewModels()
     private val shelfViewModel: ShelfViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // load configuration from DataStore
+        lifecycleScope.launch {
+            Configuration.load(applicationContext)
+
+            // this is asynchronous so this should always be called
+            // its a bit inefficient but w/e \_(-.-)_/ shouldn't really affect the performance
+            profileViewModel.reinitializeDatabase()
+            shelfViewModel.reinitializeDatabase()
+        }
+
         // TODO remove after testing
-        /*shelfViewModel.clearPublications {
-            Log.d("MainActivity", "Publications cleared successfully")
+        /*profileViewModel.clearProfiles {
+            Log.d("MainActivity", "Profiles cleared successfully")
         }*/
 
         // disable edge-to-edge on newer phones

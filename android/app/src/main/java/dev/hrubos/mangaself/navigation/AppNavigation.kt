@@ -9,9 +9,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,6 +30,7 @@ import dev.hrubos.mangaself.view.SettingsScreen
 import dev.hrubos.mangaself.view.ShelfWrapper
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation(
@@ -35,6 +38,8 @@ fun AppNavigation(
     shelfViewModel: ShelfViewModel
 ) {
     val navController = rememberNavController()
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     NavHost(navController = navController, startDestination = "entry") {
         composable("entry") {
@@ -43,7 +48,22 @@ fun AppNavigation(
                 onNavigateToAddProfile = { navController.navigate("addProfile") },
                 onNavigateToShelf = { profileId ->
                     navController.navigate("shelf/$profileId")
-                }
+                },
+                onSwitchRepository = { apiUrl ->
+                    if(apiUrl != null){
+                        Configuration.useLocalDB = false
+                        Configuration.apiURL = apiUrl
+                    }else{
+                        Configuration.useLocalDB = true
+                    }
+
+                    profileViewModel.reinitializeDatabase()
+                    shelfViewModel.reinitializeDatabase()
+
+                    coroutineScope.launch {
+                        Configuration.save(context)
+                    }
+                },
             )
 
             LaunchedEffect(Unit) {

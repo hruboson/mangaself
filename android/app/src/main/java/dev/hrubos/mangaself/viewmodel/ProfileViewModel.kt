@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import dev.hrubos.db.Database
 import dev.hrubos.db.Profile
@@ -26,11 +27,20 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private val _selectedProfile = MutableStateFlow<Profile?>(null)
     val selectedProfile: StateFlow<Profile?> = _selectedProfile.asStateFlow()
 
-    // will be assigned on initialization
-    private val db = Database(
+    private var _db: Database = Database(
         useLocal = Configuration.useLocalDB,
-        application = application
+        application = application,
+        mongoBaseUrl = Configuration.apiURL ?: ""
     )
+    val db: Database get() = _db
+
+    fun reinitializeDatabase() {
+        _db = Database(
+            useLocal = Configuration.useLocalDB,
+            application = application,
+            mongoBaseUrl = Configuration.apiURL ?: ""
+        )
+    }
 
     init {
         viewModelScope.launch {
@@ -52,7 +62,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
             }.onSuccess { profile ->
                 _selectedProfile.value = profile
                 Configuration.selectedProfileId = profileId
-                Log.d("ProfileViewModel", "Selected profile: ${profile.name}")
+                Log.d("ProfileViewModel", "Selected profile: ${profile?.name}")
             }.onFailure {
                 Log.e("ProfileViewModel", "Profile not found: $profileId")
             }
@@ -82,9 +92,14 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
         return try {
             val profile = db.getProfile(id)
+            if(profile == null){
+                Log.e("ProfileViewModel", "Failed to restore profile $id")
+                _selectedProfile.value = null
+                null
+            }
             _selectedProfile.value = profile
             Configuration.selectedProfileId = id
-            Log.d("ProfileViewModel", "Restored last selected profile: ${profile.name}")
+            Log.d("ProfileViewModel", "Restored last selected profile: ${profile?.name}")
             profile
         } catch (e: Exception) {
             Log.e("ProfileViewModel", "Failed to restore profile $id: ${e.message}", e)
