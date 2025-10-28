@@ -7,7 +7,7 @@ from urllib.parse import unquote
 from models import Profile, Publication, Chapter
 from database import profiles_collection
 
-app = FastAPI(title="Profiles / Publications API")
+app = FastAPI(title="Mangaself API")
 
 COL: Collection = profiles_collection
 
