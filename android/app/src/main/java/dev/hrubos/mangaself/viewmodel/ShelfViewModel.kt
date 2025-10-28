@@ -117,7 +117,11 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 Log.d("ShelfViewModel", "Adding publication with path ${rawUri}")
 
                 val pub = db.addPublication(profileId, rawUri, title = dirName)
-                scanChapters(pub)
+                if(pub.systemPath.isNotBlank()){
+                    scanChapters(pub)
+                }else {
+                Log.e("ShelfViewModel", "Cannot determine system path of added publication: ${rawUri}")
+                }
 
                 val coverUri = findFirstImageInFirstChapter(uri)
                 if (coverUri != null) {
