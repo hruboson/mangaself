@@ -1,141 +1,33 @@
 # Mangaself
-Local manga/comics reader. Project for the Mobile technologies course on UTB.
+Local manga/comics reader for Android. Project for the Mobile Technologies course at UTB.
 
-Author: Ondřej Hruboš (o1\_hrubos *at* utb.cz)
+**Author:** Ondřej Hruboš (o1\_hrubos *at* utb.cz)
 
-# About
-Simple comics/manga library app. Create your own manga/comics library in your android device. Use your own folders or zip archives as source.
+## About
+Mangaself is a simple manga/comics library app that lets you create and manage your own collection directly on your Android device. You can use your own folders as sources.
 
-You can either index the manga yourself or use mangadex api to get basic metadata. Library metadata are stored in local MongoDB.
-It gets additional metadata from https://api.mangadex.org/docs/swagger.html
-(!DONT FORGET TO CREDIT MANGADEX IN INFO)
+The app supports indexing your manga manually or fetching basic metadata from [MangaDex](https://mangadex.org/). Library metadata is stored locally, while additional metadata is retrieved from the [MangaDex API](https://api.mangadex.org/). You can also self host the Mangself API and access it in the app remotely.
 
-# Ideas
+## Features
+- Create and manage multiple profiles.
+- Add manga/comics from local folders (or zip/czf files in future).
+- Index manga manually or fetch metadata from MangaDex.
+- Automatically track reading progress.
+- Support for both local storage and remote API.
 
-- progress saved in local storage
-- manga metadata acquired from mangadex api
+## Quick Download
+The latest APK can be downloaded directly from the `packages` folder in this GitHub repository.  
 
-1. entry screen
-    - profile selection
-        - list
-    - new
-        - name
+> Navigate to [Releases](https://github.com/hruboson/mangaself/releases/) and select the latest `mangaself.apk` (under Assets) file for installation on your device.
 
-2. main screen
-    - top bar
-            - left side toggle show only favorites (star)
-            - middle search bar
-            - right side settings + info
-    - first tab list of manga
-        - tiles (default order by last read)
-        - long press to select
-            - selected can be batch removed/favorited/...
-    - second tab add manga (batch/single, select folder, metadata, ...)
+## Getting Started
+1. Clone the repository.
+2. Open the android directory in Android Studio.
+3. Optionally run the local Mangaself API using `make local`
+4. Build and run the APK on your device.
 
-3. manga screen
-    - top bar
-        - left: go back
-        - right: toggle favorite
-    - title
-    - description
+## Screenshots
+![Screenshots](doc/screenshots.png)
 
-4. reading screen (chapter)
-    - basic reading settings at bottom - right->left/left->right/long strip
-    - chapter title at top
-    - current page number
-    - skip to next/previous chapter button
-5. settings screen
-    - top bar
-        - left: go back
-        - right: info
-    - middle (settings)
-        - profile name
-        - reading mode
-        - app theme
-    - bottom
-        - switch profile button - will take the user to entry screen
-
-6. info screen
-   - author credits
-   - mangadex credits
-
-## Color palette
-Subject to change
-
-1. https://coolors.co/242038-636363-f3cc59-ffca24-ffbf00
-1. https://coolors.co/242038-9067c6-8d86c9-f4e04d-f2ed6f
-1. https://coolors.co/f1e3f3-c2bbf0-8fb8ed-62bfed-3590f3
-
-# Specifications
-### MongoDB collection specification:
-- Create two collections 
-    - Manga
-    - Profile
-- Each collection is described by at least 3 fields 
-    - Manga:
-        1. systemPath\<String\>\<PrimaryKey\>
-        2. title\<String\>
-        3. description\<String\>
-        4. chapters\<Object\>
-            1. title\<String\>
-            2. description\<String\>
-            3. pages\<Int\>
-            4. pageLastRead\<Int\>
-            5. read\<Boolean\> 
-        5. favourite\<Boolean\>
-
-    - Profile:
-        1. ID\<UUID\>
-        2. name\<String\>
-        3. settings\<Object\>
-           1. darkMode\<Boolean\>
-           2. readingMode\<String\> 
-           3. onPublicationClick\<String\> /* whether to go to last chapter or to publication detail on pub click */
-        4. associatedManga\<List\<Manga\>\>
-- Each collection contains at least 5 documents.
-- There must be a common field between both collections (typically, an ID).
-- One of the collections must define a text (search) index.
-
-#### Hierarchy summary
-Profile
- ├─ ID : UUID (PrimaryKey)
- ├─ name : String
- ├─ settings : Settings
- │    ├─ darkMode : Boolean
- │    └─ readingMode : String
- └─ associatedManga : List<Manga>
-        ├─ systemPath : String (PrimaryKey)
-        ├─ title : String
-        ├─ description : String
-        ├─ favourite : Boolean
-        └─ chapters : List<Chapter>
-                ├─ title : String
-                ├─ description : String
-                ├─ pages : Int
-                ├─ pageLastRead : Int
-                └─ read : Boolean
-
-### API Project specification:
-- The API must expose at least 7 endpoints:
-    - Get all documents from one collection
-        - Manga
-        - Profiles
-    - Get one document by id (two endpoints, one for each collection)
-        - Manga(ID)
-        - Profiles(ID)
-    - Get all documents by search (use the text index here)
-        - Manga(Title)
-    - Add a document (in one collection)
-        - Manga
-    - Edit a document (in one collection)
-        - Manga
-    - Delete a document (in one collection)
-        - Manga
-
-### Android Front-end specification:
-- Written in Kotlin and will use MVVM architecture.
-- User interface designed using XML or Jetpack Compose.
-- Application icon and splash screen.
-- Compilable into APK and presentable in a simulator or device.
-- Multiple screens and functional navigation between screens.
-- Communication over the network and retrieve data, e.g., from REST API.
+## Contact
+For any questions or bug reports, contact **Ondřej Hruboš** at o1\_hrubos *at* utb.cz.
