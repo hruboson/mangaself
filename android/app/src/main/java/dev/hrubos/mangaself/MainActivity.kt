@@ -42,11 +42,6 @@ class MainActivity : ComponentActivity() {
             shelfViewModel.reinitializeDatabase()
         }
 
-        // TODO remove after testing
-        /*profileViewModel.clearProfiles {
-            Log.d("MainActivity", "Profiles cleared successfully")
-        }*/
-
         // disable edge-to-edge on newer phones
         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
