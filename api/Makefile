@@ -1,5 +1,6 @@
 # Detect OS
 UNAME_S := $(OS)
+MONGODBDATA := D:\Dev\MongoDBMangaselfData # change according to your data folder
 ifeq ($(UNAME_S),Windows_NT)
 	# Windows
     VENV := .venv\Scripts
@@ -20,6 +21,14 @@ endif
 # Default target: run main.py
 run: venv
 	uvicorn main:app --reload --host 0.0.0.0 --port 8088
+
+local-mongo:
+	mongod --dbpath $(MONGODBDATA) --fork # fork starts background process
+
+local-api: run
+
+local:
+	make -j 2 local-api local-mongo
 
 # Open a shell inside the virtual environment
 shell: venv
@@ -47,4 +56,4 @@ freeze:
 clean:
 	$(RM) .venv
 
-.PHONY: run venv clean freeze shell
+.PHONY: run venv clean freeze shell local-mongo local-api local
