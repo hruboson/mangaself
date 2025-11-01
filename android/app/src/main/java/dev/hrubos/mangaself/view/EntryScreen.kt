@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.hrubos.db.Profile
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.AppLogo
 import dev.hrubos.mangaself.ui.components.TextH1
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
@@ -49,7 +50,7 @@ fun EntryScreen(
     var profiles: List<Profile> by remember { mutableStateOf(listOf<Profile>()) }
 
     var showSwitchRepositoryDialog by remember { mutableStateOf(false) } // dialog state
-    var repositoryUrl by remember { mutableStateOf("") }
+    var repositoryUrl by remember { mutableStateOf(Configuration.apiURL.orEmpty()) }
 
     fun reloadProfiles(){
         viewModel.getProfiles { profiles = it }
@@ -57,6 +58,12 @@ fun EntryScreen(
 
     LaunchedEffect(Unit) {
         reloadProfiles()
+    }
+
+    LaunchedEffect(showSwitchRepositoryDialog) {
+        if (showSwitchRepositoryDialog) {
+            repositoryUrl = Configuration.apiURL.orEmpty()
+        }
     }
 
     Surface(
