@@ -101,7 +101,12 @@ class MongoRepository(private val baseUrl: String) : Repository {
         pubUri: String,
         toggleTo: Boolean
     ) {
+        val encodedPubUri = URLEncoder.encode(pubUri, StandardCharsets.UTF_8.toString())
 
+        client.put("$baseUrl/profile/$profileId/publication/favourite") {
+            parameter("systemPath", encodedPubUri)
+            parameter("toggleTo", toggleTo)
+        }
     }
 
     override suspend fun getAllPublications(): List<Publication> {
@@ -140,6 +145,13 @@ class MongoRepository(private val baseUrl: String) : Repository {
         chapter: Chapter,
         lastRead: Int
     ) {
+        val encodedPubUri = URLEncoder.encode(pub.systemPath, StandardCharsets.UTF_8.toString())
+        val encodedChapterTitle = URLEncoder.encode(chapter.title, StandardCharsets.UTF_8.toString())
 
+        client.put("$baseUrl/profile/$profileId/publication/chapter") {
+            parameter("systemPath", encodedPubUri)
+            parameter("chapterTitle", encodedChapterTitle)
+            parameter("lastRead", lastRead)
+        }
     }
 }

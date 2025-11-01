@@ -215,12 +215,24 @@ def edit_publication_cover(id: str, systemPath: str = Query(...), coverPath: str
 
     return {"status": "updated", "coverPath": coverPath}
 
+# Toggle favourite
 @app.put("/profile/{id}/publication/favourite")
 def toggle_publication_favourite(id: str, systemPath: str = Query(...), toggleTo: bool = Query(...)):
+    systemPath = unquote(systemPath)
+
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+    
+    result = COL.update_one(
+        {"id": id, "associatedPublications.systemPath": systemPath},
+        {"$set": {"associatedPublications.$.favourite": toggleTo}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {"status": "updated", "favourite": toggleTo}
 
 # -------------------- CHAPTERS --------------------
 
@@ -246,17 +258,68 @@ def add_chapters_to_publication(
 
     return {"status": "chapters updated", "count": len(chapters)}
 
-# Toggle favourite
-@app.put("/profile/{id}/publication/favourite")
-def toggle_publication_favourite(id: str):
-    profile = find_profile(id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    pass
-
 @app.put("/profile/{id}/publication/chapter")
-def update_chapter(id: str):
+def update_chapter(id: str, systemPath: str = Query(...), chapterTitle: str = Query(...), lastRead: int = Query(...)):
+    systemPath = unquote(systemPath)
+    chapterTitle = unquote(chapterTitle)
+
     profile = find_profile(id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    pass
+    
+    publication_exists = COL.find_one(
+        {"id": id, "associatedPublications.systemPath": systemPath},
+        {"associatedPublications.$": 1}
+    )
+    if not publication_exists:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    # aggregation pipeline to locate the exact chapter document
+    pipeline = [
+        {"$match": {"id": id}}, # find profile by id
+        {"$unwind": "$associatedPublications"}, # expand publications array
+        {"$match": {"associatedPublications.systemPath": systemPath}}, # filter target publication
+        {"$unwind": "$associatedPublications.chapters"}, # expand chapters array
+        {"$match": {"associatedPublications.chapters.title": chapterTitle}}, # filter chapter by title
+        {"$replaceRoot": {"newRoot": "$associatedPublications.chapters"}} # return the chapter
+    ]
+
+    result = list(COL.aggregate(pipeline))
+    if not result:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+
+    chapter_doc = result[0]
+    pages = chapter_doc.get("pages", 0)
+    position = chapter_doc.get("position", 0)
+
+    read = lastRead >= pages
+    new_last_chapter_read = position + 1
+
+    # update using array filters
+    result = COL.update_one(
+        {
+            "id": id,
+            "associatedPublications.systemPath": systemPath
+        },
+        {
+            "$set": {
+                "associatedPublications.$[pub].chapters.$[chap].pageLastRead": lastRead,
+                "associatedPublications.$[pub].chapters.$[chap].read": read,
+                "associatedPublications.$[pub].lastChapterRead": new_last_chapter_read
+            }
+        },
+        array_filters=[
+            {"pub.systemPath": systemPath},
+            {"chap.title": chapterTitle}
+        ]
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Update failed")
+
+    return {
+        "status": "updated",
+        "pageLastRead": lastRead,
+        "read": read,
+        "lastChapterRead": new_last_chapter_read
+    }
