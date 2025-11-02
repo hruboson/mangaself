@@ -1,5 +1,5 @@
 # Mangaself
-Local manga/comics reader for Android. Project for the Mobile Technologies course at UTB.
+Local manga/comics reader for Android.
 
 **Author:** Ondřej Hruboš (o1\_hrubos *at* utb.cz)
 
