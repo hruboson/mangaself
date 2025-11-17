@@ -56,6 +56,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +77,9 @@ import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 data class TabItem(
     val name: String,
@@ -376,6 +380,7 @@ fun PublicationGridItem(
     }
 }
 
+@OptIn(FlowPreview::class)
 @Composable
 fun PublicationDetail(
     shelfViewModel: ShelfViewModel,
@@ -398,6 +403,48 @@ fun PublicationDetail(
         shelfViewModel.loadPublication(path)
     }
 
+    var titleText by remember { mutableStateOf("") }
+    var descriptionText by remember { mutableStateOf("") }
+    var titleInitialized by remember { mutableStateOf(false) }
+    var descriptionInitialized by remember { mutableStateOf(false) }
+
+    LaunchedEffect(publication) {
+        publication?.let {
+            titleText = it.title
+            descriptionText = it.description
+        }
+    }
+
+    LaunchedEffect(titleText) {
+        snapshotFlow { titleText }
+            .debounce(500)
+            .distinctUntilChanged()
+            .collect { newTitle ->
+                if (titleInitialized) { // skip first automatic emission
+                    publication?.let { pub ->
+                        shelfViewModel.editPublicationTitle(newTitle)
+                    }
+                } else {
+                    titleInitialized = true
+                }
+            }
+    }
+
+    LaunchedEffect(descriptionText) {
+        snapshotFlow { descriptionText }
+            .debounce(500)
+            .distinctUntilChanged()
+            .collect { newDesc ->
+                if (descriptionInitialized) { // skip first automatic emission
+                    publication?.let { pub ->
+                        shelfViewModel.editPublicationDescription(newDesc)
+                    }
+                } else {
+                    descriptionInitialized = true
+                }
+            }
+    }
+
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -405,7 +452,7 @@ fun PublicationDetail(
             publication?.let { pub ->
                 FloatingTopMenu(
                     onBack = onBack,
-                    title = pub.title
+                    title = titleText
                 )
 
                 Column(
@@ -426,7 +473,7 @@ fun PublicationDetail(
                                 .data(pub.coverPath.ifBlank { R.drawable.cover_placeholder })
                                 .crossfade(true)
                                 .build(),
-                            contentDescription = pub.title,
+                            contentDescription = titleText,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .width(120.dp)
@@ -447,15 +494,15 @@ fun PublicationDetail(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             TextField(
-                                value = pub.title,
-                                onValueChange = { shelfViewModel.editPublicationTitle(it) },
+                                value = titleText,
+                                onValueChange = { titleText = it },
                                 label = { Text("Title") },
                                 modifier = Modifier.fillMaxWidth()
                             )
 
                             TextField(
-                                value = pub.description,
-                                onValueChange = { shelfViewModel.editPublicationDescription(it) },
+                                value = descriptionText,
+                                onValueChange = { descriptionText = it },
                                 label = { Text("Description") },
                                 modifier = Modifier.fillMaxWidth()
                             )

@@ -162,11 +162,51 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun editPublicationTitle(title: String){
+        val currentPub = _publication.value ?: return
+        viewModelScope.launch {
+            try {
+                db.editPublication(
+                    profileId = Configuration.selectedProfileId,
+                    pubUri = currentPub.systemPath,
+                    title = title,
+                    description = currentPub.description
+                )
 
+                // refresh publication
+                val updatedPub = db.getPublicationBySystemPath(Configuration.selectedProfileId, currentPub.systemPath)
+                _publication.value = updatedPub
+
+                _publications.value = _publications.value.map {
+                    if (it.systemPath == updatedPub?.systemPath) updatedPub else it
+                }
+            } catch (e: Exception) {
+                Log.e("ShelfViewModel", "Failed to update publication title", e)
+            }
+        }
     }
 
     fun editPublicationDescription(description: String){
+        val currentPub = _publication.value ?: return
+        viewModelScope.launch {
+            try {
+                db.editPublication(
+                    profileId = Configuration.selectedProfileId,
+                    pubUri = currentPub.systemPath,
+                    title = currentPub.title,
+                    description = description
+                )
 
+                // refresh publication
+                val updatedPub = db.getPublicationBySystemPath(Configuration.selectedProfileId, currentPub.systemPath)
+                _publication.value = updatedPub
+
+                _publications.value = _publications.value.map {
+                    if (it.systemPath == updatedPub?.systemPath) updatedPub else it
+                }
+            } catch (e: Exception) {
+                Log.e("ShelfViewModel", "Failed to update publication description", e)
+            }
+        }
     }
 
     fun togglePublicationFavourite(pub: Publication){

@@ -96,6 +96,21 @@ class MongoRepository(private val baseUrl: String) : Repository {
         client.put("$baseUrl/profile/$profileId/publication/cover?systemPath=$encodedPubUri&coverPath=$encodedCoverUri")
     }
 
+    override suspend fun editPublication(
+        profileId: String,
+        pubUri: String,
+        description: String,
+        title: String
+    ) {
+        val encodedPubUri = URLEncoder.encode(pubUri, StandardCharsets.UTF_8.toString())
+
+        client.put("$baseUrl/profile/$profileId/publication/edit") {
+            parameter("systemPath", encodedPubUri)
+            parameter("title", title)
+            parameter("description", description)
+        }
+    }
+
     override suspend fun togglePublicationFavourite(
         profileId: String,
         pubUri: String,
@@ -121,9 +136,9 @@ class MongoRepository(private val baseUrl: String) : Repository {
         profileId: String,
         systemPath: String
     ): Publication? {
-        val encodedPath = URLEncoder.encode(systemPath, StandardCharsets.UTF_8.toString()) // encode so it doesn't cause trouble in the query/url
-        return client.get("$baseUrl/profile/$profileId/publication?systemPath=$encodedPath")
-            .body()
+        return client.get("$baseUrl/profile/$profileId/publication") {
+            parameter("systemPath", systemPath)
+        }.body()
     }
 
     override suspend fun removePublication(systemPath: String) {

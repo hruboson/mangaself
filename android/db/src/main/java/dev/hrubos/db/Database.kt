@@ -42,6 +42,9 @@ class Database(
     suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) =
         repository.editPublicationCover(profileId, pubUri, coverUri)
 
+    suspend fun editPublication(profileId: String, pubUri: String, description: String, title: String) =
+        repository.editPublication(profileId, pubUri, description, title)
+
     suspend fun togglePublicationFavourite(profileId: String, pubUri: String, toggleTo: Boolean) =
         repository.togglePublicationFavourite(profileId, pubUri, toggleTo)
 

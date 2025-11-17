@@ -11,6 +11,7 @@ interface Repository {
     suspend fun addPublication(profileId: String, path: String, title: String, description: String): Publication
     suspend fun addChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
     suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String)
+    suspend fun editPublication(profileId: String, pubUri: String, description: String, title: String)
     suspend fun togglePublicationFavourite(profileId: String, pubUri: String, toggleTo: Boolean)
     suspend fun getAllPublications(): List<Publication>
     suspend fun getAllPublicationsOfProfile(profileId: String): List<Publication>

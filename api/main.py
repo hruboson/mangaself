@@ -234,6 +234,42 @@ def toggle_publication_favourite(id: str, systemPath: str = Query(...), toggleTo
 
     return {"status": "updated", "favourite": toggleTo}
 
+@app.put("/profile/{id}/publication/edit")
+def edit_publication(
+    id: str,
+    systemPath: str = Query(...),
+    title: str = Query(None),
+    description: str = Query(None)
+):
+    systemPath = unquote(systemPath)
+
+    profile = find_profile(id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    update_fields = {}
+    if title is not None:
+        update_fields["associatedPublications.$.title"] = title
+    if description is not None:
+        update_fields["associatedPublications.$.description"] = description
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    result = COL.update_one(
+        {"id": id, "associatedPublications.systemPath": systemPath},
+        {"$set": update_fields}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {
+        "status": "updated",
+        "title": title,
+        "description": description
+    }
+
 # -------------------- CHAPTERS --------------------
 
 # Add chapters to publication

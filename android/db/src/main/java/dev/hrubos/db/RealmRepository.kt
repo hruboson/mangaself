@@ -131,6 +131,22 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
+    override suspend fun editPublication(
+        profileId: String,
+        pubUri: String,
+        description: String,
+        title: String
+    ) {
+        realm.write {
+            val managedPub = query<PublicationRO>("systemPath == $0", pubUri)
+                .first()
+                .find() ?: return@write  // Exit if not found
+
+            managedPub.title = title
+            managedPub.description = description
+        }
+    }
+
     override suspend fun togglePublicationFavourite(
         profileId: String,
         pubUri: String,
