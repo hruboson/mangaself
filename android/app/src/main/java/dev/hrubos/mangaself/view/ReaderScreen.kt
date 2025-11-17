@@ -252,7 +252,7 @@ fun ReaderPage(file: DocumentFile) {
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            contentScale = ContentScale.Fit,
+            contentScale = ContentScale.FillWidth,
             onState = { state ->
                 isLoading = when (state) {
                     is coil.compose.AsyncImagePainter.State.Loading -> true
