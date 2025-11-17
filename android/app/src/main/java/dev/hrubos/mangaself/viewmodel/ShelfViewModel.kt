@@ -340,14 +340,48 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         return firstImage?.uri
     }
 
+    private fun updateChapterTitles(pub: Publication, mdChapters: List<Chapter>) {
+        viewModelScope.launch {
+            try {
+                val titleMap = mdChapters.associateBy({ it.position }, { it.title })
+
+                pub.chapters.forEach { localChapter ->
+                    val newTitle = titleMap[localChapter.position]
+                    if (!newTitle.isNullOrBlank() && newTitle != localChapter.title) {
+                        db.updateChapter(
+                            profileId = Configuration.selectedProfileId,
+                            pub = pub,
+                            chapter = localChapter.copy(title = newTitle),
+                            lastRead = localChapter.pageLastRead // preserve lastRead
+                        )
+                    }
+                }
+
+                // refresh publication
+                val updatedPub = db.getPublicationBySystemPath(Configuration.selectedProfileId, pub.systemPath)
+                withContext(Dispatchers.Main) {
+                    _publication.value = updatedPub
+                    _publications.value = _publications.value.map { (if (it.systemPath == pub.systemPath) updatedPub else it)!! }
+                }
+
+            } catch (e: Exception) {
+                Log.e("ShelfViewModel", "Failed to update chapter titles", e)
+            }
+        }
+    }
+
     public fun fetchMetadata(pub: Publication){
         viewModelScope.launch {
-            val description = MangaDexApi.fetchMangaDescription(pub.title)
-            if (!description.isNullOrEmpty()) {
+            val mdpub = MangaDexApi.fetchMangaByTitle(pub.title)
+            if (mdpub != null) {
+                val attributes = mdpub.optJSONObject("attributes")
+                val description = attributes?.optJSONObject("description")?.optString("en") ?: ""
+                val mangaId = mdpub.optString("id")
+
+                //val mdChapters = if (mangaId.isNotEmpty()) MangaDexApi.fetchChapters(mangaId) else emptyList()
+                //updateChapterTitles(pub, mdChapters)
+
                 editPublicationDescription(description)
-                withContext(Dispatchers.Main) {
-                    _publication.value = pub.copy(description = description)
-                }
             }
         }
     }
