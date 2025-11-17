@@ -55,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -75,17 +76,19 @@ import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.R
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
+import dev.hrubos.mangaself.ui.components.SlidingPanel
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 data class TabItem(
     val name: String,
     val screen: String
 )
-
 
 @Composable
 fun ShelfWrapper(
@@ -399,6 +402,9 @@ fun PublicationDetail(
 
     var showRemoveDialog by remember { mutableStateOf(false) } // confirm dialog state
 
+    var showUpdateConfirmation by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(path) {
         shelfViewModel.loadPublication(path)
     }
@@ -445,163 +451,201 @@ fun PublicationDetail(
             }
     }
 
+    var descriptionExpanded by remember { mutableStateOf(false) }
+
     Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            publication?.let { pub ->
-                FloatingTopMenu(
-                    onBack = onBack,
-                    title = titleText
-                )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                publication?.let { pub ->
+                    FloatingTopMenu(
+                        onBack = onBack,
+                        title = titleText,
+                        onInfo = { descriptionExpanded = !descriptionExpanded }
+                    )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-
-                    Row(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.Top
+                            .fillMaxSize()
+                            .padding(16.dp)
                     ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(pub.coverPath.ifBlank { R.drawable.cover_placeholder })
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = titleText,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .width(120.dp)
-                                .aspectRatio(0.75f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outline,
-                                    RoundedCornerShape(8.dp)
-                                )
-                        )
 
-                        Column(
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .align(Alignment.Top),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.Top
                         ) {
-                            TextField(
-                                value = titleText,
-                                onValueChange = { titleText = it },
-                                label = { Text("Title") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            TextField(
-                                value = descriptionText,
-                                onValueChange = { descriptionText = it },
-                                label = { Text("Description") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            Button(
-                                onClick = { showRemoveDialog = true },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Red,
-                                    contentColor = Color.White
-                                ),
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(pub.coverPath.ifBlank { R.drawable.cover_placeholder })
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = titleText,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(36.dp)
+                                    .width(120.dp)
+                                    .aspectRatio(0.75f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outline,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                            )
+
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .align(Alignment.Top),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    "Remove from library",
-                                    style = MaterialTheme.typography.labelLarge
+                                TextField(
+                                    value = titleText,
+                                    onValueChange = { titleText = it },
+                                    label = { Text("Title") },
+                                    modifier = Modifier.fillMaxWidth()
                                 )
-                            }
-                        }
-                    }
 
-                    Text("Chapters", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        val sortedChapters = pub.chapters.sortedBy { it.position }
-                        items(sortedChapters.size) { index ->
-                            val chapter = sortedChapters[index]
-                            val isFullyRead = chapter.pageLastRead == chapter.pages
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onChapterClick(pub, chapter) }
-                                    .padding(vertical = 8.dp, horizontal = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(
-                                    modifier = Modifier.weight(1f)
+                                Button(
+                                    onClick = { showRemoveDialog = true },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Red,
+                                        contentColor = Color.White
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(36.dp)
                                 ) {
                                     Text(
-                                        text = chapter.title,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Pages: ${chapter.pages}, Last read: ${chapter.pageLastRead}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
+                                        "Remove from library",
+                                        style = MaterialTheme.typography.labelLarge
                                     )
                                 }
 
-                                Icon(
-                                    imageVector = if (isFullyRead)
-                                        Icons.Default.Visibility
-                                    else
-                                        Icons.Default.VisibilityOff,
-                                    contentDescription = if (isFullyRead) "Chapter fully read" else "Unread chapter",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.clickable {
-                                        val newPage = if (isFullyRead) 0 else chapter.pages
-                                        shelfViewModel.updateChapterLastRead(pub, chapter, newPage)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = { /* TODO: action for first button */ },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Rescan")
                                     }
+
+                                    Button(
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                publication?.let { pub ->
+                                                    shelfViewModel.fetchMetadata(pub)
+                                                    showUpdateConfirmation = true
+                                                    delay(2000)
+                                                    showUpdateConfirmation = false
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Fetch Info")
+                                    }
+                                }
+                            }
+                        }
+
+                        Text("Chapters", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                        ) {
+                            val sortedChapters = pub.chapters.sortedBy { it.position }
+                            items(sortedChapters.size) { index ->
+                                val chapter = sortedChapters[index]
+                                val isFullyRead = chapter.pageLastRead == chapter.pages
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onChapterClick(pub, chapter) }
+                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = chapter.title,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Pages: ${chapter.pages}, Last read: ${chapter.pageLastRead}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
+
+                                    Icon(
+                                        imageVector = if (isFullyRead)
+                                            Icons.Default.Visibility
+                                        else
+                                            Icons.Default.VisibilityOff,
+                                        contentDescription = if (isFullyRead) "Chapter fully read" else "Unread chapter",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.clickable {
+                                            val newPage = if (isFullyRead) 0 else chapter.pages
+                                            shelfViewModel.updateChapterLastRead(
+                                                pub,
+                                                chapter,
+                                                newPage
+                                            )
+                                        }
+                                    )
+                                }
+
+                                HorizontalDivider(
+                                    Modifier,
+                                    DividerDefaults.Thickness,
+                                    DividerDefaults.color
                                 )
                             }
+                        }
 
-                            HorizontalDivider(
-                                Modifier,
-                                DividerDefaults.Thickness,
-                                DividerDefaults.color
-                            )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                val sortedChapters = pub.chapters.sortedBy { it.position }
+                                val chapterToContinue =
+                                    sortedChapters.firstOrNull { it.pageLastRead < it.pages }
+                                        ?: sortedChapters.lastOrNull()
+
+                                chapterToContinue?.let { chapter ->
+                                    onChapterClick(pub, chapter)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Continue reading")
                         }
                     }
+                } ?: Text("Loading...")
+            }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            val sortedChapters = pub.chapters.sortedBy { it.position }
-                            val chapterToContinue =
-                                sortedChapters.firstOrNull { it.pageLastRead < it.pages }
-                                    ?: sortedChapters.lastOrNull()
-
-                            chapterToContinue?.let { chapter ->
-                                onChapterClick(pub, chapter)
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Continue reading")
-                    }
-                }
-            } ?: Text("Loading...")
+            SlidingPanel(
+                expanded = descriptionExpanded,
+                text = descriptionText,
+                textName = "Description",
+                onClose = { descriptionExpanded = false}
+            )
         }
+
     }
 
     if (isScanning) {
@@ -641,5 +685,22 @@ fun PublicationDetail(
                 }
             }
         )
+    }
+
+    if (showUpdateConfirmation) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Text(
+                text = "Metadata fetched from MangaDex API",
+                color = Color.White,
+                modifier = Modifier
+                    .padding(bottom = 70.dp)
+                    .background(Color.Gray, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
     }
 }

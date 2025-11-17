@@ -13,6 +13,7 @@ import dev.hrubos.db.Chapter
 import dev.hrubos.db.Database
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
+import dev.hrubos.mangaself.model.MangaDexApi
 import dev.hrubos.mangaself.model.filterAndSortChapters
 import dev.hrubos.mangaself.model.padNumbers
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+// NOTES
+// manifest - android.permission.INTERNET
+// launched effect - with content - url, response=URL(...).readText()!, json, ...
+// exception handling - try catch / responseCode - if code ... else if code ... else ...
+// api key security - do not save directly in code, save in local.properties (equal to .env)
+//      BuildConfig.API_KEY
+// optimize API calls - caching (HTTP cache, in-memory cache, App cache), background loading, debounce, throttle, e-tag
 
 class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
@@ -121,6 +130,14 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                     scanChapters(pub)
                 }else {
                 Log.e("ShelfViewModel", "Cannot determine system path of added publication: ${rawUri}")
+                }
+
+                val description = MangaDexApi.fetchMangaDescription(pub.title)
+                if (!description.isNullOrEmpty()) {
+                    editPublicationDescription(description)
+                    withContext(Dispatchers.Main) {
+                        _publication.value = pub.copy(description = description)
+                    }
                 }
 
                 val coverUri = findFirstImageInFirstChapter(uri)
@@ -304,15 +321,6 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    private fun fetchMetadata(pub: Publication){
-        // manifest - android.permission.INTERNET
-        // launched effect - with content - url, response=URL(...).readText()!, json, ...
-        // exception handling - try catch / responseCode - if code ... else if code ... else ...
-        // api key security - do not save directly in code, save in local.properties (equal to .env)
-        //      BuildConfig.API_KEY
-        // optimize API calls - caching (HTTP cache, in-memory cache, App cache), background loading, debounce, throttle, e-tag
-    }
-
     private fun findFirstImageInFirstChapter(pubUri: Uri): Uri? {
         val context = getApplication<Application>()
         val root = DocumentFile.fromTreeUri(context, pubUri) ?: return null
@@ -330,6 +338,18 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             .firstOrNull()
 
         return firstImage?.uri
+    }
+
+    public fun fetchMetadata(pub: Publication){
+        viewModelScope.launch {
+            val description = MangaDexApi.fetchMangaDescription(pub.title)
+            if (!description.isNullOrEmpty()) {
+                editPublicationDescription(description)
+                withContext(Dispatchers.Main) {
+                    _publication.value = pub.copy(description = description)
+                }
+            }
+        }
     }
 
     public fun handlePickedFolder(uri: Uri){
