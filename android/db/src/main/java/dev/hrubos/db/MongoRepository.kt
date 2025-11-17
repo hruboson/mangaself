@@ -77,12 +77,36 @@ class MongoRepository(private val baseUrl: String) : Repository {
         }.body()
     }
 
-    override suspend fun addChaptersToPublication(
+    override suspend fun setChaptersToPublication(
         profileId: String,
         pubUri: String,
         chapters: List<Chapter>
     ) {
         client.put("$baseUrl/profile/$profileId/publication/chapters") {
+            parameter("pubUri", pubUri)
+            contentType(ContentType.Application.Json)
+            setBody(chapters)
+        }
+    }
+
+    override suspend fun addNewChaptersToPublication(
+        profileId: String,
+        pubUri: String,
+        chapters: List<Chapter>
+    ) {
+        client.post("$baseUrl/profile/$profileId/publication/chapters/add") {
+            parameter("pubUri", pubUri)
+            contentType(ContentType.Application.Json)
+            setBody(chapters)
+        }
+    }
+
+    override suspend fun removeChaptersOfPublication(
+        profileId: String,
+        pubUri: String,
+        chapters: List<Chapter>
+    ) {
+        client.post("$baseUrl/profile/$profileId/publication/chapters/remove") {
             parameter("pubUri", pubUri)
             contentType(ContentType.Application.Json)
             setBody(chapters)

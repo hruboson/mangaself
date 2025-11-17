@@ -48,5 +48,26 @@ fun List<DocumentFile>.filterAndSortChapters(): List<DocumentFile> =
     this.filter { it.isDirectory && it.name?.contains(Regex("\\d")) == true }
         .sortedWith(numericComparator)
 
+/**
+ * filters and sorts a list of DocumentFiles, putting unnumbered chapters first, then numeric chapters.
+ */
+fun List<DocumentFile>.filterAndSortChaptersIncludingUnnumbered(): List<DocumentFile> =
+    this.filter { it.isDirectory }
+        .sortedWith(Comparator { a, b ->
+            val nameA = a.name?.lowercase(Locale.ROOT) ?: ""
+            val nameB = b.name?.lowercase(Locale.ROOT) ?: ""
+
+            val numA = numberRegex.findAll(nameA).map { it.value.toInt() }.toList()
+            val numB = numberRegex.findAll(nameB).map { it.value.toInt() }.toList()
+
+            // if a has no number and b does, a goes first
+            if (numA.isEmpty() && numB.isNotEmpty()) return@Comparator -1
+            // if b has no number and a does, b goes first
+            if (numB.isEmpty() && numA.isNotEmpty()) return@Comparator 1
+            // otherwise, compare numerically
+            val numCompare = compareNumberLists(numA, numB)
+            if (numCompare != 0) numCompare else nameA.compareTo(nameB)
+        })
+
 fun String.padNumbers(): String =
     replace(Regex("\\d+")) { it.value.padStart(10, '0') }

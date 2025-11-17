@@ -9,7 +9,10 @@ interface Repository {
     suspend fun updateProfile(profile: Profile, name: String, readingMode: String)
 
     suspend fun addPublication(profileId: String, path: String, title: String, description: String): Publication
-    suspend fun addChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
+    suspend fun setChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
+    suspend fun addNewChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
+    suspend fun removeChaptersOfPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
+
     suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String)
     suspend fun editPublication(profileId: String, pubUri: String, description: String, title: String)
     suspend fun togglePublicationFavourite(profileId: String, pubUri: String, toggleTo: Boolean)

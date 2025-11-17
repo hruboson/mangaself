@@ -97,7 +97,7 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
-    override suspend fun addChaptersToPublication(
+    override suspend fun setChaptersToPublication(
         profileId: String,
         pubUri: String,
         chapters: List<Chapter>
@@ -114,6 +114,48 @@ class RealmRepository(application: android.app.Application) : Repository {
                 val unmanagedChapter = ch.toRealmObject()
                 val managedChapter = copyToRealm(unmanagedChapter)
 
+                publication.chapters.add(managedChapter)
+            }
+        }
+    }
+
+    override suspend fun removeChaptersOfPublication(
+        profileId: String,
+        pubUri: String,
+        chapters: List<Chapter>
+    ) {
+        realm.write {
+            val profile = query<ProfileRO>("id == $0", profileId).first().find() ?: return@write
+            val publication = profile.associatedPublications
+                .firstOrNull { it.systemPath == pubUri } ?: return@write
+
+            chapters.forEach { chapterToRemove ->
+                val managedChapter = publication.chapters
+                    .firstOrNull { it.systemPath == chapterToRemove.systemPath }
+
+                if (managedChapter != null) {
+                    publication.chapters.remove(managedChapter)
+                    delete(managedChapter)  // remove from Realm entirely
+                }
+            }
+        }
+    }
+
+    override suspend fun addNewChaptersToPublication(
+        profileId: String,
+        pubUri: String,
+        chapters: List<Chapter>
+    ) {
+        realm.write {
+            val profile = query<ProfileRO>("id == $0", profileId).first().find() ?: return@write
+
+            val publication = profile.associatedPublications
+                .firstOrNull { it.systemPath == pubUri } ?: return@write
+
+            // append chapters
+            chapters.forEach { ch ->
+                val unmanagedChapter = ch.toRealmObject()
+                val managedChapter = copyToRealm(unmanagedChapter)
                 publication.chapters.add(managedChapter)
             }
         }
@@ -143,6 +185,7 @@ class RealmRepository(application: android.app.Application) : Repository {
                 .find() ?: return@write  // Exit if not found
 
             managedPub.title = title
+            managedPub.description = description
             managedPub.description = description
         }
     }

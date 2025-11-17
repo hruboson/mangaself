@@ -36,8 +36,14 @@ class Database(
     suspend fun addPublication(profileId: String, path: String, title: String = "", description: String = ""): Publication =
         repository.addPublication(profileId, path, title, description)
 
-    suspend fun addChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>) =
-        repository.addChaptersToPublication(profileId, pubUri, chapters)
+    suspend fun setChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>) =
+        repository.setChaptersToPublication(profileId, pubUri, chapters)
+
+    suspend fun addNewChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>) =
+        repository.addNewChaptersToPublication(profileId, pubUri, chapters)
+
+    suspend fun removeChaptersOfPublication(profileId: String, pubUri: String, chapters: List<Chapter>) =
+        repository.removeChaptersOfPublication(profileId, pubUri, chapters)
 
     suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) =
         repository.editPublicationCover(profileId, pubUri, coverUri)

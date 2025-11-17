@@ -272,9 +272,9 @@ def edit_publication(
 
 # -------------------- CHAPTERS --------------------
 
-# Add chapters to publication
+# Set chapters to publication
 @app.put("/profile/{id}/publication/chapters")
-def add_chapters_to_publication(
+def set_chapters_to_publication(
     id: str,
     pubUri: str = Query(...),
     chapters: List[Chapter] = Body(...)
@@ -283,7 +283,6 @@ def add_chapters_to_publication(
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    # Replace chapters list of the matching publication
     result = COL.update_one(
         {"id": id, "associatedPublications.systemPath": pubUri},
         {"$set": {"associatedPublications.$.chapters": [ch.dict() for ch in chapters]}}
@@ -294,6 +293,60 @@ def add_chapters_to_publication(
 
     return {"status": "chapters updated", "count": len(chapters)}
 
+# Append chapters to publication
+@app.post("/profile/{id}/publication/chapters/add")
+def append_chapters_to_publication(
+    id: str,
+    pubUri: str = Query(...),
+    chapters: List[Chapter] = Body(...)
+):
+    profile = find_profile(id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    chapters_to_add = [ch.dict() for ch in chapters]
+
+    result = COL.update_one(
+        {"id": id, "associatedPublications.systemPath": pubUri},
+        {"$push": {"associatedPublications.$.chapters": {"$each": chapters_to_add}}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {"status": "chapters appended", "count": len(chapters_to_add)}
+
+# Remove chapter from publication
+@app.post("/profile/{id}/publication/chapters/remove")
+def remove_chapters_from_publication(
+    id: str,
+    pubUri: str = Query(...),
+    chapters: List[Chapter] = Body(...)
+):
+    profile = find_profile(id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    system_paths_to_remove = [ch.systemPath for ch in chapters]
+
+    result = COL.update_one(
+        {"id": id, "associatedPublications.systemPath": pubUri},
+        {"$pull": {
+            "associatedPublications.$.chapters": {
+                "systemPath": {"$in": system_paths_to_remove}
+            }
+        }}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Publication not found")
+
+    return {
+        "status": "chapters removed",
+        "removed_count": len(system_paths_to_remove)
+    }
+
+# Update one chapter
 @app.put("/profile/{id}/publication/chapter")
 def update_chapter(id: str, systemPath: str = Query(...), chapterTitle: str = Query(...), lastRead: int = Query(...)):
     systemPath = unquote(systemPath)

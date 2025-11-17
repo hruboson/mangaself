@@ -531,7 +531,7 @@ fun PublicationDetail(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Button(
-                                        onClick = { /* TODO: action for first button */ },
+                                        onClick = { shelfViewModel.rescanChapters(pub) },
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         Text("Rescan")

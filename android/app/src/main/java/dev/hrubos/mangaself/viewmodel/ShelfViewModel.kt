@@ -15,6 +15,7 @@ import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.model.MangaDexApi
 import dev.hrubos.mangaself.model.filterAndSortChapters
+import dev.hrubos.mangaself.model.filterAndSortChaptersIncludingUnnumbered
 import dev.hrubos.mangaself.model.padNumbers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -277,7 +278,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             }
 
             val sortedDirs = docFolder.listFiles()
-                .toList().filterAndSortChapters()
+                .toList().filterAndSortChaptersIncludingUnnumbered() // TODO add user settings to either filter out unnumbered or keep them
 
             val chaptersList = mutableListOf<Chapter>()
             var position = 0
@@ -305,7 +306,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             }
 
             try {
-                db.addChaptersToPublication(Configuration.selectedProfileId, pub.systemPath, chaptersList)
+                db.setChaptersToPublication(Configuration.selectedProfileId, pub.systemPath, chaptersList)
                 Log.d("ChapterScanner", "Finished scanning chapters: ${chaptersList.size} found")
 
                 // refresh publication after DB write
@@ -318,6 +319,87 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
             } finally {
                 _isScanning.value = false
             }
+        }
+    }
+
+    fun rescanChapters(pub: Publication) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _isScanning.value = true
+            Log.d("ChapterScanner", "Rescanning chapters for ${pub.systemPath}")
+
+            val folderUri = pub.systemPath.toUri()
+            val docFolder = DocumentFile.fromTreeUri(getApplication(), folderUri)
+
+            if (docFolder == null || !docFolder.isDirectory) {
+                Log.e("ChapterScanner", "Invalid publication folder")
+                _isScanning.value = false
+                return@launch
+            }
+
+            val existingChapters = pub.chapters
+            val existingSystemPaths = existingChapters.map { it.systemPath }.toSet()
+
+            val sortedDirs = docFolder.listFiles()
+                .toList()
+                .filterAndSortChaptersIncludingUnnumbered() // TODO add user settings to either filter out unnumbered or keep them
+
+            val currentPaths = sortedDirs.map { it.uri.toString() }.toSet()
+
+            // remove invalid
+            val chaptersToRemove = existingChapters.filter { it.systemPath !in currentPaths }
+            if (chaptersToRemove.isNotEmpty()) {
+                try {
+                    db.removeChaptersOfPublication(Configuration.selectedProfileId, pub.systemPath, chaptersToRemove)
+                    Log.d("ChapterScanner", "Removed ${chaptersToRemove.size} missing chapters from ${pub.systemPath}")
+                } catch (e: Exception) {
+                    Log.e("ChapterScanner", "Failed to remove missing chapters for ${pub.systemPath}", e)
+                }
+            }
+
+            // add new
+            val newChapters = mutableListOf<Chapter>()
+            var position = pub.chapters.size // start after existing chapters
+
+            for (dir in sortedDirs) {
+                if (existingSystemPaths.contains(dir.uri.toString())) continue
+
+                val pageFiles = dir.listFiles().filter { it.isFile }
+                if (pageFiles.isEmpty()) {
+                    Log.d("ChapterScanner", "Skipping empty chapter: ${dir.name}")
+                    continue
+                }
+
+                val chapter = Chapter(
+                    title = dir.name ?: "Untitled Chapter",
+                    systemPath = dir.uri.toString(),
+                    description = "",
+                    position = position++,
+                    pages = pageFiles.size,
+                    pageLastRead = 0,
+                    read = false
+                )
+
+                newChapters.add(chapter)
+            }
+
+            if (newChapters.isEmpty()) {
+                Log.d("ChapterScanner", "No new chapters found for ${pub.systemPath}")
+            } else {
+                try {
+                    db.addNewChaptersToPublication(Configuration.selectedProfileId, pub.systemPath, newChapters)
+                    Log.d("ChapterScanner", "Added ${newChapters.size} new chapters to ${pub.systemPath}")
+                } catch (e: Exception) {
+                    Log.e("ChapterScanner", "Failed to add new chapters for ${pub.systemPath}", e)
+                }
+            }
+
+            // refresh publication
+            val updated = db.getPublicationBySystemPath(Configuration.selectedProfileId, pub.systemPath)
+            withContext(Dispatchers.Main) {
+                _publication.value = updated
+            }
+
+            _isScanning.value = false
         }
     }
 
