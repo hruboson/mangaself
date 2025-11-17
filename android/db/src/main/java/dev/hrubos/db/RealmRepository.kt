@@ -40,7 +40,7 @@ class RealmRepository(application: android.app.Application) : Repository {
 
     override suspend fun deleteProfile(profile: Profile) {
         realm.write {
-            val managedProfile = findLatest(profile.toRealmObject()) ?: return@write
+            val managedProfile = query<ProfileRO>("id == $0", profile.id).first().find() ?: return@write
             delete(managedProfile)
         }
     }
@@ -54,7 +54,7 @@ class RealmRepository(application: android.app.Application) : Repository {
 
     override suspend fun updateProfile(profile: Profile, name: String, readingMode: String) {
         realm.write {
-            val managedProfile = findLatest(profile.toRealmObject()) ?: return@write
+            val managedProfile = query<ProfileRO>("id == $0", profile.id).first().find() ?: return@write
 
             if(name != "") {
                 managedProfile.name = name
