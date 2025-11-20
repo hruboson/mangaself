@@ -26,8 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.hrubos.mangaself.model.ReadingMode
+import dev.hrubos.mangaself.model.ThemeStyle
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.ui.components.ReadingModeDropdown
+import dev.hrubos.mangaself.ui.components.ThemeDropdown
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 
 @Composable
@@ -36,6 +38,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onAbout: () -> Unit,
     onLogout: () -> Unit,
+    themeSettings: ThemeStyle,
 ) {
     val currentProfile by profileViewModel.selectedProfile.collectAsState()
     var name by remember { mutableStateOf(currentProfile?.name ?: "") }
@@ -82,6 +85,11 @@ fun SettingsScreen(
                         val selectedMode = ReadingMode.entries.first { it.text == selectedText }
                         profileViewModel.updateProfileReadingMode(selectedMode.text)
                     }
+                )
+
+                ThemeDropdown(
+                    selectedOption = themeSettings.text,
+                    onChange = { /*themeSettings = it*/ }
                 )
             }
 

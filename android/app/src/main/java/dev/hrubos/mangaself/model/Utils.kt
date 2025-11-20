@@ -14,6 +14,13 @@ enum class ReadingMode(val text: String) {
 
 val readingModeOptions = ReadingMode.entries.map { it.text }
 
+enum class ThemeStyle(val text: String) {
+    DARK("Dark"),
+    LIGHT("Light"),
+}
+
+val themeStyleOptions = ThemeStyle.entries.map { it.text }
+
 /**
  * compare two lists of integers numerically (e.g. [1,2] < [1,10])
  */

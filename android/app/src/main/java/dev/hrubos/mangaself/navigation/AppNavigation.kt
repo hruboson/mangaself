@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.model.Configuration
+import dev.hrubos.mangaself.model.ThemeStyle
 import dev.hrubos.mangaself.view.AboutScreen
 import dev.hrubos.mangaself.view.AddProfileScreen
 import dev.hrubos.mangaself.view.EntryScreen
@@ -35,7 +36,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppNavigation(
     profileViewModel: ProfileViewModel,
-    shelfViewModel: ShelfViewModel
+    shelfViewModel: ShelfViewModel,
+    themeSettings: ThemeStyle
 ) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
@@ -193,7 +195,8 @@ fun AppNavigation(
                     navController.navigate("entry") {
                         popUpTo("entry") { inclusive = true } // clear backstack
                     }
-                }
+                },
+                themeSettings = themeSettings
             )
         }
 

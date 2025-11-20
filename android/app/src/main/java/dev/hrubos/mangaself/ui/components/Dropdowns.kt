@@ -13,7 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import dev.hrubos.mangaself.model.ReadingMode
+import dev.hrubos.mangaself.model.ThemeStyle
 import dev.hrubos.mangaself.model.readingModeOptions
+import dev.hrubos.mangaself.model.themeStyleOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +37,49 @@ fun ReadingModeDropdown(
             onValueChange = { selected = it },
             readOnly = true, // prevent typing
             label = { Text("Reading Mode") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier.menuAnchor()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        selected = option
+                        expanded = false
+                        onChange(option)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ThemeDropdown(
+    options: List<String> = themeStyleOptions,
+    selectedOption: String = ThemeStyle.DARK.text,
+    onChange: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf(selectedOption) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+    ) {
+        // TextField that looks like input
+        TextField(
+            value = selected,
+            onValueChange = { selected = it },
+            readOnly = true, // prevent typing
+            label = { Text("Theme") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
             modifier = Modifier.menuAnchor()
