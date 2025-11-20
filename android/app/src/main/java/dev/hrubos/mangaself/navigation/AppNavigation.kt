@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 fun AppNavigation(
     profileViewModel: ProfileViewModel,
     shelfViewModel: ShelfViewModel,
-    themeSettings: ThemeStyle
+    onThemeChange: (ThemeStyle) -> Unit,
 ) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
@@ -196,7 +196,7 @@ fun AppNavigation(
                         popUpTo("entry") { inclusive = true } // clear backstack
                     }
                 },
-                themeSettings = themeSettings
+                onThemeChange = onThemeChange
             )
         }
 

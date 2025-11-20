@@ -38,7 +38,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onAbout: () -> Unit,
     onLogout: () -> Unit,
-    themeSettings: ThemeStyle,
+    onThemeChange: (ThemeStyle) -> Unit,
 ) {
     val currentProfile by profileViewModel.selectedProfile.collectAsState()
     var name by remember { mutableStateOf(currentProfile?.name ?: "") }
@@ -88,8 +88,9 @@ fun SettingsScreen(
                 )
 
                 ThemeDropdown(
-                    selectedOption = themeSettings.text,
-                    onChange = { /*themeSettings = it*/ }
+                    //TODO
+                    //selectedOption = themeSettings.text,
+                    onChange = { selected -> onThemeChange(ThemeStyle from selected) }
                 )
             }
 

@@ -59,14 +59,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             var currentTheme by remember { mutableStateOf(ThemeStyle.DARK) }
 
-            MangaselfTheme (darkTheme = currentTheme == ThemeStyle.DARK || isSystemInDarkTheme()) {
+            MangaselfTheme (darkTheme = currentTheme == ThemeStyle.DARK /*|| isSystemInDarkTheme()*/) { // put this logic inside of MangaselfTheme class
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
                         .padding(WindowInsets.statusBars.asPaddingValues())
                 ) {
-                    AppNavigation(profileViewModel, shelfViewModel, currentTheme)
+                    AppNavigation(profileViewModel, shelfViewModel, onThemeChange = { theme -> currentTheme = theme} )
                 }
             }
         }

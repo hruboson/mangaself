@@ -17,6 +17,12 @@ val readingModeOptions = ReadingMode.entries.map { it.text }
 enum class ThemeStyle(val text: String) {
     DARK("Dark"),
     LIGHT("Light"),
+    AUTO("Auto");
+
+    companion object {
+        private val map = ThemeStyle.entries.toTypedArray().associateBy { it.text }
+        infix fun from(text: String): ThemeStyle = (map[text]) as ThemeStyle
+    }
 }
 
 val themeStyleOptions = ThemeStyle.entries.map { it.text }
