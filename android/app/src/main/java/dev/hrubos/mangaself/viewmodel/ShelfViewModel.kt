@@ -500,7 +500,7 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
                 is ApiResult.NotFound -> {
                     _descriptionState.value = result
-                    showStatusMessage("Manga not found on MangaDex. Try changing the Manga title")
+                    showStatusMessage("Manga not found on MangaDex. Try changing the Manga title.")
                 }
 
                 is ApiResult.NetworkError -> {
