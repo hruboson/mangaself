@@ -24,7 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.model.ReadingMode
 import dev.hrubos.mangaself.model.ThemeStyle
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
@@ -44,6 +46,8 @@ fun SettingsScreen(
     var name by remember { mutableStateOf(currentProfile?.name ?: "") }
     var readingMode by remember { mutableStateOf(currentProfile?.readingMode ?: ReadingMode.LEFTTORIGHT) }
     var showDeleteDialog by remember { mutableStateOf(false) } // dialog state
+    val context = LocalContext.current
+    val currentTheme by Configuration.themeFlow(context).collectAsState(initial = ThemeStyle.AUTO)
 
     LaunchedEffect(currentProfile) {
         currentProfile?.let {
@@ -88,8 +92,7 @@ fun SettingsScreen(
                 )
 
                 ThemeDropdown(
-                    //TODO
-                    //selectedOption = themeSettings.text,
+                    selectedOption = currentTheme.text,
                     onChange = { selected -> onThemeChange(ThemeStyle from selected) }
                 )
             }

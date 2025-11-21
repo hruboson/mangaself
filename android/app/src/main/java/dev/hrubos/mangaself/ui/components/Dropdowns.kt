@@ -68,7 +68,6 @@ fun ThemeDropdown(
     onChange: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(selectedOption) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -76,8 +75,8 @@ fun ThemeDropdown(
     ) {
         // TextField that looks like input
         TextField(
-            value = selected,
-            onValueChange = { selected = it },
+            value = selectedOption,
+            onValueChange = { },
             readOnly = true, // prevent typing
             label = { Text("Theme") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -93,7 +92,6 @@ fun ThemeDropdown(
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
-                        selected = option
                         expanded = false
                         onChange(option)
                     }

@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -57,16 +55,25 @@ class MainActivity : ComponentActivity() {
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContent {
-            var currentTheme by remember { mutableStateOf(ThemeStyle.DARK) }
+            val currentTheme by Configuration.themeFlow(applicationContext)
+                .collectAsState(initial = ThemeStyle.AUTO)
 
-            MangaselfTheme (darkTheme = currentTheme == ThemeStyle.DARK /*|| isSystemInDarkTheme()*/) { // put this logic inside of MangaselfTheme class
+            MangaselfTheme (darkTheme = when(currentTheme) {
+                ThemeStyle.AUTO -> isSystemInDarkTheme()
+                ThemeStyle.DARK -> true
+                ThemeStyle.LIGHT -> false
+            } ) { // put this logic inside of MangaselfTheme class
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
                         .padding(WindowInsets.statusBars.asPaddingValues())
                 ) {
-                    AppNavigation(profileViewModel, shelfViewModel, onThemeChange = { theme -> currentTheme = theme} )
+                    AppNavigation(profileViewModel, shelfViewModel, onThemeChange = { newTheme ->
+                        lifecycleScope.launch {
+                            Configuration.setTheme(applicationContext, newTheme)
+                        }
+                    })
                 }
             }
         }
