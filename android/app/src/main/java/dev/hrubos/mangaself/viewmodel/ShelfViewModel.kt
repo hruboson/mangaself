@@ -12,12 +12,14 @@ import androidx.lifecycle.viewModelScope
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Database
 import dev.hrubos.db.Publication
+import dev.hrubos.mangaself.model.ApiResult
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.model.MangaDexApi
 import dev.hrubos.mangaself.model.filterAndSortChapters
 import dev.hrubos.mangaself.model.filterAndSortChaptersIncludingUnnumbered
 import dev.hrubos.mangaself.model.padNumbers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -64,6 +66,20 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _descriptionState = MutableStateFlow<ApiResult<String>>(ApiResult.Idle)
+    val descriptionState: StateFlow<ApiResult<String>> = _descriptionState
+
+    private val _statusMessage = MutableStateFlow<String?>(null)
+    val statusMessage: StateFlow<String?> = _statusMessage
+    fun showStatusMessage(message: String) {
+        viewModelScope.launch {
+            _statusMessage.value = message
+            delay(3000)
+            _statusMessage.value = null
+        }
+    }
+
 
     // combined publications flow: favourites + search filter
     val filteredPublications: StateFlow<List<Publication>> = combine(
@@ -134,11 +150,25 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
                 }
 
                 val description = MangaDexApi.fetchMangaDescription(pub.title)
-                if (!description.isNullOrEmpty()) {
-                    editPublicationDescription(description)
-                    withContext(Dispatchers.Main) {
-                        _publication.value = pub.copy(description = description)
+                _descriptionState.value = description
+
+                when (description) {
+                    is ApiResult.Success -> {
+                        editPublicationDescription(description.data)
                     }
+                    is ApiResult.NotFound -> {
+                        Log.w("Shelf", "Description not found")
+                    }
+                    is ApiResult.NetworkError -> {
+                        Log.e("Shelf", "No internet", description.exception)
+                    }
+                    is ApiResult.HttpError -> {
+                        Log.e("Shelf", "HTTP ${description.code}")
+                    }
+                    is ApiResult.UnknownError -> {
+                        Log.e("Shelf", "Unknown error", description.exception)
+                    }
+                    else -> {}
                 }
 
                 val coverUri = findFirstImageInFirstChapter(uri)
@@ -454,16 +484,41 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     public fun fetchMetadata(pub: Publication){
         viewModelScope.launch {
-            val mdpub = MangaDexApi.fetchMangaByTitle(pub.title)
-            if (mdpub != null) {
-                val attributes = mdpub.optJSONObject("attributes")
-                val description = attributes?.optJSONObject("description")?.optString("en") ?: ""
-                val mangaId = mdpub.optString("id")
+            _descriptionState.value = ApiResult.Loading
 
-                //val mdChapters = if (mangaId.isNotEmpty()) MangaDexApi.fetchChapters(mangaId) else emptyList()
-                //updateChapterTitles(pub, mdChapters)
+            when (val result = MangaDexApi.fetchMangaByTitle(pub.title)) {
+                is ApiResult.Idle -> { }
+                is ApiResult.Success -> {
+                    val attributes = result.data.optJSONObject("attributes")
+                    val description = attributes?.optJSONObject("description")?.optString("en") ?: ""
 
-                editPublicationDescription(description)
+                    _descriptionState.value = ApiResult.Success(description)
+                    editPublicationDescription(description)
+
+                    showStatusMessage("Metadata updated successfully.")
+                }
+
+                is ApiResult.NotFound -> {
+                    _descriptionState.value = result
+                    showStatusMessage("Manga not found on MangaDex. Try changing the Manga title")
+                }
+
+                is ApiResult.NetworkError -> {
+                    _descriptionState.value = result
+                    showStatusMessage("Network error. Check your internet connection.")
+                }
+
+                is ApiResult.HttpError -> {
+                    _descriptionState.value = result
+                    showStatusMessage("Server error (${result.code}). Try again later.")
+                }
+
+                is ApiResult.UnknownError -> {
+                    _descriptionState.value = result
+                    showStatusMessage("An unknown error occurred.")
+                }
+
+                ApiResult.Loading -> {}
             }
         }
     }

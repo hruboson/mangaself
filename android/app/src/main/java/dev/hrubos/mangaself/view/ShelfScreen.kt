@@ -74,13 +74,14 @@ import coil.request.ImageRequest
 import dev.hrubos.db.Chapter
 import dev.hrubos.db.Publication
 import dev.hrubos.mangaself.R
+import dev.hrubos.mangaself.model.ApiResult
 import dev.hrubos.mangaself.model.Configuration
 import dev.hrubos.mangaself.ui.components.FloatingTopMenu
 import dev.hrubos.mangaself.ui.components.SlidingPanel
+import dev.hrubos.mangaself.ui.components.StatusMessageBox
 import dev.hrubos.mangaself.viewmodel.ProfileViewModel
 import dev.hrubos.mangaself.viewmodel.ShelfViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -391,18 +392,11 @@ fun PublicationDetail(
     onBack: () -> Unit,
     onChapterClick: (Publication, Chapter) -> Unit,
 ) {
-    /**
-     *
-     * TODO rescan chapters
-     *
-     */
-
     val publication by shelfViewModel.publication.collectAsState()
     val isScanning by shelfViewModel.isScanning.collectAsState()
+    val statusMessage by shelfViewModel.statusMessage.collectAsState()
 
     var showRemoveDialog by remember { mutableStateOf(false) } // confirm dialog state
-
-    var showUpdateConfirmation by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(path) {
@@ -542,15 +536,22 @@ fun PublicationDetail(
                                             coroutineScope.launch {
                                                 publication?.let { pub ->
                                                     shelfViewModel.fetchMetadata(pub)
-                                                    showUpdateConfirmation = true
-                                                    delay(2000)
-                                                    showUpdateConfirmation = false
                                                 }
                                             }
                                         },
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Fetch Info")
+                                        val isLoading by shelfViewModel.descriptionState.collectAsState()
+
+                                        if (isLoading is ApiResult.Loading) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(16.dp),
+                                                color = MaterialTheme.colorScheme.onPrimary,
+                                                strokeWidth = 2.dp
+                                            )
+                                        } else {
+                                            Text("Fetch Info")
+                                        }
                                     }
                                 }
                             }
@@ -648,17 +649,29 @@ fun PublicationDetail(
 
     }
 
-    if (isScanning) {
+    if (isScanning || statusMessage != null) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.4f)),
-            contentAlignment = Alignment.Center
+
+                .zIndex(if (isScanning) 100f else 10f)
+                .background(if (isScanning) Color.Black.copy(alpha = 0.4f) else Color.Transparent),
+            contentAlignment = if (isScanning) Alignment.Center else Alignment.TopCenter
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = Color.White)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Scanning chapters...", color = Color.White)
+            when {
+                // Priority 1: Scanning overlay (full screen centered)
+                isScanning -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = Color.White)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Scanning chapters...", color = Color.White)
+                    }
+                }
+
+                // Priority 2: Status message (bottom banner)
+                statusMessage != null -> {
+                    StatusMessageBox(statusMessage!!) // !! should be safe here because of the != null check
+                }
             }
         }
     }
@@ -685,22 +698,5 @@ fun PublicationDetail(
                 }
             }
         )
-    }
-
-    if (showUpdateConfirmation) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Text(
-                text = "Metadata fetched from MangaDex API",
-                color = Color.White,
-                modifier = Modifier
-                    .padding(bottom = 70.dp)
-                    .background(Color.Gray, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            )
-        }
     }
 }
