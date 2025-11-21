@@ -27,6 +27,13 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private val _selectedProfile = MutableStateFlow<Profile?>(null)
     val selectedProfile: StateFlow<Profile?> = _selectedProfile.asStateFlow()
 
+    private val _apiStatusMessage = MutableStateFlow<String?>(null)
+    val apiStatusMessage: StateFlow<String?> = _apiStatusMessage.asStateFlow()
+
+    fun clearApiStatusMessage() {
+        _apiStatusMessage.value = null
+    }
+
     private var _db: Database = Database(
         useLocal = Configuration.useLocalDB,
         application = application,
@@ -113,9 +120,12 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
             try {
                 val profiles = db.getProfiles()
                 onResult(profiles)
+                _apiStatusMessage.value = null // Clear any previous error on success
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to get profiles", e)
                 onResult(emptyList())
+
+                _apiStatusMessage.value = "Failed to connect to API: ${e.message ?: "Unknown error"}. Check the URL and your network connection."
             }
         }
     }

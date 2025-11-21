@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +47,8 @@ fun EntryScreen(
     onNavigateToShelf: (String) -> Unit,
     onSwitchRepository: (String?) -> Unit,
 ){
-    
+    val apiStatusMessage by viewModel.apiStatusMessage.collectAsState()
+
     var profiles: List<Profile> by remember { mutableStateOf(listOf<Profile>()) }
 
     var showSwitchRepositoryDialog by remember { mutableStateOf(false) } // dialog state
@@ -192,6 +194,47 @@ fun EntryScreen(
                         ) {
                             Text("OK")
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    if (apiStatusMessage != null) {
+        Dialog(onDismissRequest = { viewModel.clearApiStatusMessage() }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Connection Error",
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = apiStatusMessage!!,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { viewModel.clearApiStatusMessage() }
+                    ) {
+                        Text("Dismiss")
                     }
                 }
             }
