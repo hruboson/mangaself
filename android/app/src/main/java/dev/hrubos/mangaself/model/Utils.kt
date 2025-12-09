@@ -5,6 +5,7 @@ import java.util.Locale
 
 val DEFAULT_FUNC = { throw UnsupportedOperationException("this shouldn't be called, default argument for functions accepting function as parameter") }
 val DEFAULT_FUNC_STRING: (String) -> Unit = { str -> throw UnsupportedOperationException("this shouldn't be called, default argument for functions accepting function as parameter") }
+val DEFAULT_FUNC_STRING_BOOLEAN: (String, Boolean) -> Unit = { str, bool -> throw UnsupportedOperationException("this shouldn't be called, default argument for functions accepting function as parameter") }
 
 enum class ReadingMode(val text: String) {
     LEFTTORIGHT("Left to right"),

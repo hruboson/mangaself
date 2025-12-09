@@ -113,6 +113,16 @@ class MongoRepository(private val baseUrl: String) : Repository {
         }
     }
 
+    override suspend fun searchAllPublicationsOfProfile(
+        profileId: String,
+        query: String
+    ): List<Publication> {
+        val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
+        return client.get("$baseUrl/profile/$profileId/publications/search") {
+            parameter("query", encodedQuery)
+        }.body()
+    }
+
     override suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String) {
         val encodedPubUri = URLEncoder.encode(pubUri, StandardCharsets.UTF_8.toString())
         val encodedCoverUri = URLEncoder.encode(coverUri, StandardCharsets.UTF_8.toString())

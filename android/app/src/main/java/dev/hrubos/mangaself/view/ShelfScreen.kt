@@ -126,7 +126,7 @@ fun ShelfWrapper(
                 onShowFavourite = { shelfViewModel.toggleShowFavourites() },
                 showFavourites = showFavourites,
                 onSettings = onSettings,
-                onSearch = { query -> shelfViewModel.setSearchQuery(query) }
+                onSearch = { query, advanced -> shelfViewModel.setSearchQuery(query, advanced) }
             )
 
             // Tabs and content below the top menu
@@ -206,7 +206,6 @@ fun ShelfScreen(
 
     // Simple Column with top bar and list
     Column(modifier = Modifier.fillMaxSize()) {
-
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier

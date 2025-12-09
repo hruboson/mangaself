@@ -36,6 +36,14 @@ def find_profile(id: str):
         ]
     )
 
+@app.on_event("startup")
+def create_text_index():
+    # text index on title and description
+    COL.create_index([
+        ("associatedPublications.title", "text"),
+        ("associatedPublications.description", "text")
+    ])
+
 # -------------------- PROFILES --------------------
 
 @app.get("/profiles", response_model=List[Profile])
@@ -269,6 +277,46 @@ def edit_publication(
         "title": title,
         "description": description
     }
+
+@app.get("/profile/{id}/publications/search", response_model=List[Publication])
+def search_publications_of_profile(id: str, query: str = Query(...)):
+    pipeline = [
+        {"$match": {"id": id, "$text": {"$search": query}}},
+        
+        {"$project": {
+            "associatedPublications": {
+                "$filter": { # use $filter to iterate over an array
+                    "input": "$associatedPublications",
+                    "as": "pub", # each element is referenced as pub
+                    "cond": {
+                        "$or": [ # regex for either title or description
+                            {"$regexMatch": {"input": "$$pub.title", "regex": query, "options": "i"}}, # options: i makes sure it uses the index
+                            {"$regexMatch": {"input": "$$pub.description", "regex": query, "options": "i"}}
+                        ]
+                    }
+                }
+            }
+        }},
+        {"$unwind": "$associatedPublications"},
+        {"$replaceRoot": {"newRoot": "$associatedPublications"}}
+    ]
+
+    results = list(COL.aggregate(pipeline))
+
+    publications = [
+        Publication(
+            systemPath=p.get("systemPath", ""),
+            coverPath=p.get("coverPath", ""),
+            title=p.get("title", ""),
+            description=p.get("description", ""),
+            chapters=[Chapter(**c) for c in p.get("chapters", [])],
+            lastChapterRead=p.get("lastChapterRead", 0),
+            favourite=p.get("favourite", False)
+        )
+        for p in results
+    ]
+
+    return publications
 
 # -------------------- CHAPTERS --------------------
 
