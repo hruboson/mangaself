@@ -66,10 +66,6 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-    private val _advancedSearch = MutableStateFlow(false)
-    val advancedSearch: StateFlow<Boolean> = _advancedSearch
-    private val _advancedSearchResults = MutableStateFlow<List<Publication>>(emptyList())
-    val advancedSearchResults: StateFlow<List<Publication>> = _advancedSearchResults.asStateFlow()
 
     private val _descriptionState = MutableStateFlow<ApiResult<String>>(ApiResult.Idle)
     val descriptionState: StateFlow<ApiResult<String>> = _descriptionState
@@ -89,33 +85,13 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     val filteredPublications: StateFlow<List<Publication>> = combine(
         _publications,
         _showFavourites,
-        _searchQuery,
-        _advancedSearch
-    ) { pubs, favouritesOnly, query, advanced ->
-        if(!advanced) { // in-memory search
-            pubs.filter { pub ->
-                (!favouritesOnly || pub.favourite) &&
-                        (query.isBlank() || pub.title.contains(query, ignoreCase = true))
-            }
-        }else{ // database search
-            _advancedSearchResults.value.filter { pub ->
-                !favouritesOnly || pub.favourite
-            }
+        _searchQuery
+    ) { pubs, favouritesOnly, query ->
+        pubs.filter { pub ->
+            (!favouritesOnly || pub.favourite) &&
+                    (query.isBlank() || pub.title.contains(query, ignoreCase = true))
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    fun performAdvancedSearch(profileId: String, query: String) {
-        viewModelScope.launch {
-            try {
-                // fetch from DB
-                val results = db.searchAllPublicationsOfProfile(profileId, query)
-                _advancedSearchResults.value = results
-            } catch (e: Exception) {
-                Log.e("ShelfViewModel", "Advanced search failed", e)
-                _advancedSearchResults.value = emptyList()
-            }
-        }
-    }
 
     private val _isScanning = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning
@@ -297,13 +273,8 @@ class ShelfViewModel(application: Application): AndroidViewModel(application) {
     }
 
     // Update search query
-    fun setSearchQuery(query: String, advanced: Boolean) {
+    fun setSearchQuery(query: String) {
         _searchQuery.value = query
-        _advancedSearch.value = advanced
-
-        if (_advancedSearch.value && query.isNotBlank()) {
-            performAdvancedSearch(Configuration.selectedProfileId, query)
-        }
     }
 
     fun updateChapterLastRead(pub: Publication, chapter: Chapter, lastPage: Int){

@@ -3,14 +3,13 @@ package dev.hrubos.db
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.Index
 
 data class Publication(
     var systemPath: String = "",
 
     var coverPath: String = "",
-    @Index var title: String = "",
-    @Index var description: String = "",
+    var title: String = "",
+    var description: String = "",
     var chapters: List<Chapter> = emptyList(),
     var lastChapterRead: Int = 0,
     var favourite: Boolean = false,

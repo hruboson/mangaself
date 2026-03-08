@@ -12,7 +12,6 @@ interface Repository {
     suspend fun setChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
     suspend fun addNewChaptersToPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
     suspend fun removeChaptersOfPublication(profileId: String, pubUri: String, chapters: List<Chapter>)
-    suspend fun searchAllPublicationsOfProfile(profileId: String, query: String): List<Publication>
 
     suspend fun editPublicationCover(profileId: String, pubUri: String, coverUri: String)
     suspend fun editPublication(profileId: String, pubUri: String, description: String, title: String)

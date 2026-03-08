@@ -141,18 +141,6 @@ class RealmRepository(application: android.app.Application) : Repository {
         }
     }
 
-    override suspend fun searchAllPublicationsOfProfile(
-        profileId: String,
-        query: String
-    ): List<Publication> {
-        val profile = realm.query<ProfileRO>("id == $0", profileId).first().find()
-            ?: return emptyList()
-
-        return profile.associatedPublications
-            .filter { it.title.contains(query, ignoreCase = true) || it.description.contains(query, ignoreCase = true) }
-            .map { it.toPublication() }
-    }
-
     override suspend fun addNewChaptersToPublication(
         profileId: String,
         pubUri: String,

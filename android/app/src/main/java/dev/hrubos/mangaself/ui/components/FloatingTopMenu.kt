@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckBox
-import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
@@ -39,7 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.hrubos.mangaself.model.DEFAULT_FUNC
-import dev.hrubos.mangaself.model.DEFAULT_FUNC_STRING_BOOLEAN
+import dev.hrubos.mangaself.model.DEFAULT_FUNC_STRING
 
 @Composable
 fun FloatingTopMenu(
@@ -49,11 +47,10 @@ fun FloatingTopMenu(
     showFavourites: Boolean = false,
     onSettings: () -> Unit = DEFAULT_FUNC,
     onInfo: () -> Unit = DEFAULT_FUNC,
-    onSearch: (String, Boolean) -> Unit = DEFAULT_FUNC_STRING_BOOLEAN,
+    onSearch: (String) -> Unit = DEFAULT_FUNC_STRING,
     title: String = ""
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var advancedMode by remember { mutableStateOf(false) } // toggle for advanced search
 
     Box(
         modifier = Modifier
@@ -93,7 +90,7 @@ fun FloatingTopMenu(
                 }
 
                 // Center search bar
-                if(onSearch != DEFAULT_FUNC_STRING_BOOLEAN || title != "") {
+                if(onSearch != DEFAULT_FUNC_STRING || title != "") {
                     Row(
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.Center,
@@ -112,7 +109,7 @@ fun FloatingTopMenu(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                if(onSearch != DEFAULT_FUNC_STRING_BOOLEAN) {
+                                if(onSearch != DEFAULT_FUNC_STRING) {
                                     Icon(
                                         imageVector = Icons.Default.Search,
                                         contentDescription = null,
@@ -122,20 +119,13 @@ fun FloatingTopMenu(
                                         value = searchQuery,
                                         onValueChange = {
                                             searchQuery = it
-                                            onSearch(it, advancedMode)
+                                            onSearch(it)
                                         },
                                         singleLine = true,
                                         textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
                                         modifier = Modifier.weight(1f),
                                         cursorBrush = SolidColor(Color.White)
                                     )
-                                    IconButton(onClick = { advancedMode = !advancedMode }) {
-                                        Icon(
-                                            imageVector = if (advancedMode) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
-                                            contentDescription = "Toggle advanced search",
-                                            tint = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
                                 }
                                 if(title != ""){
                                     Text(title,
@@ -147,6 +137,7 @@ fun FloatingTopMenu(
                         }
                     }
                 }
+
 
                 // Right buttons
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -32,7 +32,6 @@ class Database(
     suspend fun deleteProfile(profile: Profile) = repository.deleteProfile(profile)
     suspend fun clearProfiles() = repository.clearProfiles()
     suspend fun updateProfile(profile: Profile, name: String, readingMode: String) = repository.updateProfile(profile, name, readingMode)
-    suspend fun searchAllPublicationsOfProfile(profileId: String, query: String) = repository.searchAllPublicationsOfProfile(profileId, query)
 
     suspend fun addPublication(profileId: String, path: String, title: String = "", description: String = ""): Publication =
         repository.addPublication(profileId, path, title, description)
